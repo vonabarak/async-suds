@@ -19,3 +19,7 @@ syntax: regexp
 
 # Backup files.
 \.bak$
+
+
+^\.idea.*
+
