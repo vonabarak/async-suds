@@ -23,13 +23,9 @@ import suds.cache
 import suds.plugin
 import suds.sax.parser
 import suds.transport
+import asyncio
 
-try:
-    from hashlib import md5
-except ImportError:
-    # 'hashlib' package added in Python 2.5 so use the now deprecated/removed
-    # 'md5' package in older Python versions.
-    from md5 import md5
+from hashlib import md5
 
 
 class Reader(object):
@@ -83,6 +79,7 @@ class DefinitionsReader(Reader):
         super(DefinitionsReader, self).__init__(options)
         self.fn = fn
 
+    @asyncio.coroutine
     def open(self, url):
         """
         Open a WSDL schema at the specified I{URL}.
@@ -101,7 +98,8 @@ class DefinitionsReader(Reader):
         id = self.mangle(url, "wsdl")
         wsdl = cache.get(id)
         if wsdl is None:
-            wsdl = self.fn(url, self.options)
+            wsdl = yield from self.fn(url, self.options)
+            print(wsdl)
             cache.put(id, wsdl)
         else:
             # Cached WSDL Definitions objects may have been created with
@@ -109,6 +107,7 @@ class DefinitionsReader(Reader):
             wsdl.options = self.options
             for imp in wsdl.imports:
                 imp.imported.options = self.options
+        self.wsdl = wsdl
         return wsdl
 
     def __cache(self):
@@ -127,6 +126,7 @@ class DefinitionsReader(Reader):
 class DocumentReader(Reader):
     """Integrates between the SAX L{Parser} and the document cache."""
 
+    @asyncio.coroutine
     def open(self, url):
         """
         Open an XML document at the specified I{URL}.
@@ -145,7 +145,7 @@ class DocumentReader(Reader):
         id = self.mangle(url, "document")
         xml = cache.get(id)
         if xml is None:
-            xml = self.__fetch(url)
+            xml = yield from self.__fetch(url)
             cache.put(id, xml)
         self.plugins.document.parsed(url=url, document=xml.root())
         return xml
@@ -162,6 +162,7 @@ class DocumentReader(Reader):
             return self.options.cache
         return suds.cache.NoCache()
 
+    @asyncio.coroutine
     def __fetch(self, url):
         """
         Fetch document content from an external source.
@@ -185,11 +186,7 @@ class DocumentReader(Reader):
             content = store.open(url)
         if content is None:
             request = suds.transport.Request(url)
-            fp = self.options.transport.open(request)
-            try:
-                content = fp.read()
-            finally:
-                fp.close()
+            content = yield from self.options.transport.open(request)
         ctx = self.plugins.document.loaded(url=url, document=content)
         content = ctx.document
         sax = suds.sax.parser.Parser()

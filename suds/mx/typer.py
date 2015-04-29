@@ -33,10 +33,8 @@ class Typer:
 
     types = {
         int : ('int', NS.xsdns),
-        long : ('long', NS.xsdns),
         float : ('float', NS.xsdns),
         str : ('string', NS.xsdns),
-        unicode : ('string', NS.xsdns),
         Text : ('string', NS.xsdns),
         bool : ('boolean', NS.xsdns),
      }

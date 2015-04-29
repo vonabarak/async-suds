@@ -32,8 +32,8 @@ from suds.xsd.query import ElementQuery
 from suds.xsd.schema import Schema, SchemaCollection
 
 import re
-import soaparray
-from urlparse import urljoin
+from suds import soaparray
+from urllib.parse import urljoin
 
 from logging import getLogger
 log = getLogger(__name__)
@@ -540,7 +540,7 @@ class PortType(NamedObject):
         """
         try:
             return self.operations[name]
-        except Exception, e:
+        except Exception as e:
             raise MethodNotFound(name)
 
     def __gt__(self, other):

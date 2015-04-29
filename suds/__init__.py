@@ -25,7 +25,6 @@ import sys
 # Project properties
 #
 
-from version import __build__, __version__
 
 
 #
@@ -89,7 +88,7 @@ def objid(obj):
 
 def tostr(object, encoding=None):
     """Get a unicode safe string representation of an object."""
-    if isinstance(object, basestring):
+    if isinstance(object, str):
         if encoding is None:
             return object
         return object.encode(encoding)
@@ -117,7 +116,7 @@ def tostr(object, encoding=None):
         s.append("}")
         return "".join(s)
     try:
-        return unicode(object)
+        return str(object)
     except Exception:
         return str(object)
 
@@ -126,10 +125,7 @@ def tostr(object, encoding=None):
 # Python 3 compatibility
 #
 
-if sys.version_info < (3, 0):
-    from cStringIO import StringIO as BytesIO
-else:
-    from io import BytesIO
+from io import BytesIO
 
 # Idea from 'http://lucumr.pocoo.org/2011/1/22/forwards-compatible-python'.
 class UnicodeMixin(object):
@@ -137,7 +133,7 @@ class UnicodeMixin(object):
         # For Python 3, __str__() and __unicode__() should be identical.
         __str__ = lambda x: x.__unicode__()
     else:
-        __str__ = lambda x: unicode(x).encode("utf-8")
+        __str__ = lambda x: str(x).encode("utf-8")
 
 # Used instead of byte literals as they are not supported on Python versions
 # prior to 2.6.
@@ -149,8 +145,8 @@ def byte_str(s="", encoding="utf-8", input_encoding="utf-8", errors="strict"):
     strings encoded using the given input encoding.
 
     """
-    assert isinstance(s, basestring)
-    if isinstance(s, unicode):
+    assert isinstance(s, str)
+    if isinstance(s, str):
         return s.encode(encoding, errors)
     if s and encoding != input_encoding:
         return s.decode(input_encoding, errors).encode(encoding, errors)

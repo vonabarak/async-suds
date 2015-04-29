@@ -156,7 +156,7 @@ class Object(UnicodeMixin):
                 self.__keylist__.remove(name)
         except Exception:
             cls = self.__class__.__name__
-            raise AttributeError, "%s has no attribute '%s'" % (cls, name)
+            raise AttributeError
 
     def __getitem__(self, name):
         if isinstance(name, int):
@@ -278,7 +278,7 @@ class Printer:
             if len(object) == 0:
                 return "<empty>"
             return self.print_collection(object, h, n + 2)
-        if isinstance(object, basestring):
+        if isinstance(object, str):
             return '"%s"' % (tostr(object),)
         return "%s" % (tostr(object),)
 

@@ -21,7 +21,8 @@ Contains classes for authenticated HTTP transport implementations.
 from suds.transport import *
 from suds.transport.http import HttpTransport
 
-import urllib2
+import urllib.request
+import asyncio
 
 
 class HttpAuthenticated(HttpTransport):
@@ -55,17 +56,20 @@ class HttpAuthenticated(HttpTransport):
 
         """
         HttpTransport.__init__(self, **kwargs)
-        self.pm = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        self.pm = urllib.request.HTTPPasswordMgrWithDefaultRealm()
 
+    @asyncio.coroutine
     def open(self, request):
-        self.addcredentials(request)
+        self.add_credentials(request)
         return HttpTransport.open(self, request)
 
+
+    @asyncio.coroutine
     def send(self, request):
-        self.addcredentials(request)
+        self.add_credentials(request)
         return HttpTransport.send(self, request)
 
-    def addcredentials(self, request):
+    def add_credentials(self, request):
         credentials = self.credentials()
         if None not in credentials:
             u = credentials[0]
@@ -74,26 +78,3 @@ class HttpAuthenticated(HttpTransport):
 
     def credentials(self):
         return self.options.username, self.options.password
-
-    def u2handlers(self):
-        handlers = HttpTransport.u2handlers(self)
-        handlers.append(urllib2.HTTPBasicAuthHandler(self.pm))
-        return handlers
-
-
-class WindowsHttpAuthenticated(HttpAuthenticated):
-    """
-    Provides Windows (NTLM) based HTTP authentication.
-
-    @author: Christopher Bess
-
-    """
-
-    def u2handlers(self):
-        try:
-            from ntlm import HTTPNtlmAuthHandler
-        except ImportError:
-            raise Exception("Cannot import python-ntlm module")
-        handlers = HttpTransport.u2handlers(self)
-        handlers.append(HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(self.pm))
-        return handlers

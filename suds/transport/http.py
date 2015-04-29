@@ -22,11 +22,12 @@ from suds.properties import Unskin
 from suds.transport import *
 
 import base64
-from cookielib import CookieJar
-import httplib
+from http.cookiejar import CookieJar
+import http.client
 import socket
 import sys
-import urllib2
+import asyncio
+from aiohttp.client import request as async_request
 
 from logging import getLogger
 log = getLogger(__name__)
@@ -57,149 +58,33 @@ class HttpTransport(Transport):
         self.proxy = {}
         self.urlopener = None
 
+    @asyncio.coroutine
     def open(self, request):
-        try:
-            url = self.__get_request_url_for_urllib(request)
-            log.debug('opening (%s)', url)
-            u2request = urllib2.Request(url)
-            self.proxy = self.options.proxy
-            return self.u2open(u2request)
-        except urllib2.HTTPError, e:
-            raise TransportError(str(e), e.code, e.fp)
+        headers = request.headers
+        log.debug('sending:\n%s', request)
+        res = yield from async_request('GET', request.url, headers=headers, cookies=dict(self.cookiejar))
+        reply = yield from res.content.read()
+        log.debug('received:\n%s', reply)
+        return reply
 
+
+    @asyncio.coroutine
     def send(self, request):
-        url = self.__get_request_url_for_urllib(request)
         msg = request.message
         headers = request.headers
-        try:
-            u2request = urllib2.Request(url, msg, headers)
-            self.addcookies(u2request)
-            self.proxy = self.options.proxy
-            request.headers.update(u2request.headers)
-            log.debug('sending:\n%s', request)
-            fp = self.u2open(u2request)
-            self.getcookies(fp, u2request)
-            headers = fp.headers
-            if sys.version_info < (3, 0):
-                headers = headers.dict
-            reply = Reply(httplib.OK, headers, fp.read())
-            log.debug('received:\n%s', reply)
-            return reply
-        except urllib2.HTTPError, e:
-            if e.code not in (httplib.ACCEPTED, httplib.NO_CONTENT):
-                raise TransportError(e.msg, e.code, e.fp)
+        log.debug('sending:\n%s', request)
+        res = yield from async_request('POST', request.url, data=msg, headers=headers, cookies=dict(self.cookiejar))
+        reply = yield from res.content.read()
+        log.debug('received:\n%s', reply)
+        return reply
 
-    def addcookies(self, u2request):
-        """
-        Add cookies in the cookiejar to the request.
-
-        @param u2request: A urllib2 request.
-        @rtype: u2request: urllib2.Request.
-
-        """
-        self.cookiejar.add_cookie_header(u2request)
-
-    def getcookies(self, fp, u2request):
-        """
-        Add cookies in the request to the cookiejar.
-
-        @param u2request: A urllib2 request.
-        @rtype: u2request: urllib2.Request.
-
-        """
-        self.cookiejar.extract_cookies(fp, u2request)
-
-    def u2open(self, u2request):
-        """
-        Open a connection.
-
-        @param u2request: A urllib2 request.
-        @type u2request: urllib2.Request.
-        @return: The opened file-like urllib2 object.
-        @rtype: fp
-
-        """
-        tm = self.options.timeout
-        url = self.u2opener()
-        if (sys.version_info < (3, 0)) and (self.u2ver() < 2.6):
-            socket.setdefaulttimeout(tm)
-            return url.open(u2request)
-        return url.open(u2request, timeout=tm)
-
-    def u2opener(self):
-        """
-        Create a urllib opener.
-
-        @return: An opener.
-        @rtype: I{OpenerDirector}
-
-        """
-        if self.urlopener is None:
-            return urllib2.build_opener(*self.u2handlers())
-        return self.urlopener
-
-    def u2handlers(self):
-        """
-        Get a collection of urllib handlers.
-
-        @return: A list of handlers to be installed in the opener.
-        @rtype: [Handler,...]
-
-        """
-        return [urllib2.ProxyHandler(self.proxy)]
-
-    def u2ver(self):
-        """
-        Get the major/minor version of the urllib2 lib.
-
-        @return: The urllib2 version.
-        @rtype: float
-
-        """
-        try:
-            part = urllib2.__version__.split('.', 1)
-            return float('.'.join(part))
-        except Exception, e:
-            log.exception(e)
-            return 0
-
-    def __deepcopy__(self, memo={}):
+    def __deepcopy__(self):
         clone = self.__class__()
         p = Unskin(self.options)
         cp = Unskin(clone.options)
         cp.update(p)
         return clone
 
-    @staticmethod
-    def __get_request_url_for_urllib(request):
-        """
-        Returns the given request's URL, properly encoded for use with urllib.
-
-        We expect that the given request object already verified that the URL
-        contains ASCII characters only and stored it as a native str value.
-
-        urllib accepts URL information as a native str value and may break
-        unexpectedly if given URL information in another format.
-
-        Python 3.x httplib.client implementation must be given a unicode string
-        and not a bytes object and the given string is internally converted to
-        a bytes object using an explicitly specified ASCII encoding.
-
-        Python 2.7 httplib implementation expects the URL passed to it to not
-        be a unicode string. If it is, then passing it to the underlying
-        httplib Request object will cause that object to forcefully convert all
-        of its data to unicode, assuming that data contains ASCII data only and
-        raising a UnicodeDecodeError exception if it does not (caused by simple
-        unicode + string concatenation).
-
-        Python 2.4 httplib implementation does not really care about this as it
-        does not use the internal optimization present in the Python 2.7
-        implementation causing all the requested data to be converted to
-        unicode.
-
-        """
-        assert isinstance(request.url, str)
-        return request.url
 
 
 class HttpAuthenticated(HttpTransport):
@@ -210,15 +95,17 @@ class HttpAuthenticated(HttpTransport):
 
     """
 
+    @asyncio.coroutine
     def open(self, request):
-        self.addcredentials(request)
+        self.add_credentials(request)
         return HttpTransport.open(self, request)
 
+    @asyncio.coroutine
     def send(self, request):
-        self.addcredentials(request)
+        self.add_credentials(request)
         return HttpTransport.send(self, request)
 
-    def addcredentials(self, request):
+    def add_credentials(self, request):
         credentials = self.credentials()
         if None not in credentials:
             credentials = ':'.join(credentials)

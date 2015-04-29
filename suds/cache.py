@@ -202,7 +202,8 @@ class FileCache(Cache):
             self.clear()
             f = self.__open(path, "w")
             try:
-                f.write(suds.__version__)
+                # f.write(suds.__version__)
+                pass
             finally:
                 f.close()
 

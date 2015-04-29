@@ -46,10 +46,10 @@ class Handler(ContentHandler):
 
     def startElement(self, name, attrs):
         top = self.top()
-        node = Element(unicode(name))
+        node = Element(str(name))
         for a in attrs.getNames():
-            n = unicode(a)
-            v = unicode(attrs.getValue(a))
+            n = str(a)
+            v = str(attrs.getValue(a))
             attribute = Attribute(n, v)
             if self.mapPrefix(node, attribute):
                 continue
@@ -61,16 +61,16 @@ class Handler(ContentHandler):
     def mapPrefix(self, node, attribute):
         if attribute.name == "xmlns":
             if len(attribute.value):
-                node.expns = unicode(attribute.value)
+                node.expns = str(attribute.value)
             return True
         if attribute.prefix == "xmlns":
             prefix = attribute.name
-            node.nsprefixes[prefix] = unicode(attribute.value)
+            node.nsprefixes[prefix] = str(attribute.value)
             return True
         return False
 
     def endElement(self, name):
-        name = unicode(name)
+        name = str(name)
         current = self.pop()
         if name != current.qname():
             raise Exception("malformed document")
@@ -81,7 +81,7 @@ class Handler(ContentHandler):
             current.trim()
 
     def characters(self, content):
-        text = unicode(content)
+        text = str(content)
         node = self.top()
         node.charbuffer.append(text)
 
