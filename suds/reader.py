@@ -98,7 +98,7 @@ class DefinitionsReader(Reader):
         id = self.mangle(url, "wsdl")
         wsdl = cache.get(id)
         if wsdl is None:
-            wsdl = yield from self.fn(url, self.options)
+            wsdl = self.fn(url, self.options)
             print(wsdl)
             cache.put(id, wsdl)
         else:

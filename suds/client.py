@@ -117,18 +117,24 @@ class Client(UnicodeMixin):
         if "cache" not in kwargs:
             kwargs["cache"] = suds.cache.ObjectCache(days=1)
         self.set_options(**kwargs)
-        reader = DefinitionsReader(options, Definitions)
-        asyncio.async(reader.open(url))
-        self.wsdl = reader.wsdl
-        plugins = PluginContainer(options.plugins)
-        plugins.init.initialized(wsdl=self.wsdl)
+        self.url = url
+
+
+    @asyncio.coroutine
+    def connect(self):
+        df = Definitions(self.url, self.options)
+        yield from df.connect()
+        self.reader = DefinitionsReader(self.options, df.parse)
+        yield from self.reader.open(self.url)
+        self.wsdl = yield from self.reader.open(self.url)
         self.factory = Factory(self.wsdl)
         self.service = ServiceSelector(self, self.wsdl.services)
-        self.sd = []
+        self.sd_list = []
         for s in self.wsdl.services:
             sd = ServiceDefinition(self.wsdl, s)
-            self.sd.append(sd)
-
+            self.sd_list.append(sd)
+        plugins = PluginContainer(self.options.plugins)
+        plugins.init.initialized(wsdl=self.wsdl)
 
 
     def set_options(self, **kwargs):
@@ -186,7 +192,7 @@ class Client(UnicodeMixin):
         clone.wsdl = self.wsdl
         clone.factory = self.factory
         clone.service = ServiceSelector(clone, self.wsdl.services)
-        clone.sd = self.sd
+        clone.sd_list = self.sd_list
         return clone
 
     def __str__(self):
@@ -195,7 +201,7 @@ class Client(UnicodeMixin):
         s.append("  version: %s" % (suds.__version__,))
         if suds.__build__:
             s.append("  build: %s" % (suds.__build__,))
-        for sd in self.sd:
+        for sd in self.sd_list:
             s.append("\n\n%s" % (str(sd),))
         return "".join(s)
 

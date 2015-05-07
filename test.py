@@ -4,9 +4,11 @@ import asyncio
 from suds.client import Client
 
 
-# @asyncio.coroutine
-# def Test():
-c=Client('https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl')
+@asyncio.coroutine
+def Test():
+    c=Client('https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl')
+    yield from c.connect()
 
 
-# asyncio.get_event_loop().run_until_complete(Test())
+
+asyncio.get_event_loop().run_until_complete(Test())

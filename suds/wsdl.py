@@ -34,6 +34,7 @@ from suds.xsd.schema import Schema, SchemaCollection
 import re
 from suds import soaparray
 from urllib.parse import urljoin
+import asyncio
 
 from logging import getLogger
 log = getLogger(__name__)
@@ -53,20 +54,15 @@ class WObject(Object):
 
     """
 
-    def __init__(self, root):
+    def __init__(self):
         """
         @param root: An XML root element.
         @type root: L{Element}
 
         """
         Object.__init__(self)
-        self.root = root
-        pmd = Metadata()
-        pmd.excludes = ["root"]
-        pmd.wrappers = dict(qname=repr)
-        self.__metadata__.__print__ = pmd
 
-    def resolve(self, definitions):
+    def parse(self, definitions):
         """
         Resolve named references to other WSDL objects.
 
@@ -74,7 +70,11 @@ class WObject(Object):
         @type definitions: L{Definitions}
 
         """
-        pass
+        pmd = Metadata()
+        pmd.excludes = ["root"]
+        pmd.wrappers = dict(qname=repr)
+        self.__metadata__.__print__ = pmd
+
 
 
 class NamedObject(WObject):
@@ -96,11 +96,16 @@ class NamedObject(WObject):
         @type definitions: L{Definitions}
 
         """
-        WObject.__init__(self, root)
-        self.name = root.get("name")
+        WObject.__init__(self)
+        self.root = root
+
+    def parse(self, definitions):
+        super().parse(definitions)
+        self.name = self.root.get("name")
         self.qname = (self.name, definitions.tns[1])
         pmd = self.__metadata__.__print__
         pmd.wrappers["qname"] = repr
+
 
 
 class Definitions(WObject):
@@ -135,22 +140,12 @@ class Definitions(WObject):
     Tag = "definitions"
 
     def __init__(self, url, options):
-        """
-        @param url: A URL to the WSDL.
-        @type url: str
-        @param options: An options dictionary.
-        @type options: L{options.Options}
-
-        """
+        super().__init__()
         log.debug("reading WSDL at: %s ...", url)
-        reader = DocumentReader(options)
-        d = reader.open(url)
-        root = d.root()
-        WObject.__init__(self, root)
+        self.url = url
+        self.reader = DocumentReader(options)
         self.id = objid(self)
         self.options = options
-        self.url = url
-        self.tns = self.mktns(root)
         self.types = []
         self.schema = None
         self.children = []
@@ -159,8 +154,28 @@ class Definitions(WObject):
         self.port_types = {}
         self.bindings = {}
         self.services = []
+
+
+
+    def __call__(self):
+        """
+        @param url: A URL to the WSDL.
+        @type url: str
+        @param options: An options dictionary.
+        @type options: L{options.Options}
+
+        """
+        pass
+
+
+    @asyncio.coroutine
+    def connect(self):
+        d = yield from self.reader.open(self.url)
+        self.root = d.root()
+        self.tns = self.mktns(self.root)
         self.add_children(self.root)
         self.children.sort()
+
         pmd = self.__metadata__.__print__
         pmd.excludes.append("children")
         pmd.excludes.append("wsdl")
@@ -171,7 +186,10 @@ class Definitions(WObject):
         self.set_wrapped()
         for s in self.services:
             self.add_methods(s)
-        log.debug("WSDL at '%s' loaded:\n%s", url, self)
+        log.debug("WSDL at '%s' loaded:\n%s", self.url, self)
+
+
+
 
     def mktns(self, root):
         """Get/create the target namespace."""
@@ -371,7 +389,7 @@ class Types(WObject):
         @type definitions: L{Definitions}
 
         """
-        WObject.__init__(self, root)
+        WObject.__init__(self)
         self.definitions = definitions
 
     def contents(self):
