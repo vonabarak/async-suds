@@ -26,9 +26,9 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds
-import suds.cache
-import suds.sax.parser
+import asyncsuds
+import asyncsuds.cache
+import asyncsuds.sax.parser
 
 import pytest
 from six import b, next, u
@@ -116,10 +116,10 @@ class MockFileOpener:
     def apply(self, monkeypatch):
         """Monkeypatch suds.cache module's open() global."""
         try:
-            self.__previous = suds.cache.open
+            self.__previous = asyncsuds.cache.open
         except AttributeError:
             self.__previous = open
-        monkeypatch.setitem(suds.cache.__dict__, "open", self)
+        monkeypatch.setitem(asyncsuds.cache.__dict__, "open", self)
 
     def reset(self):
         self.counter = 0
@@ -138,7 +138,7 @@ class MockParse:
 
     def apply(self, monkeypatch):
         """Monkeypatch suds SAX Parser's parse() method."""
-        monkeypatch.setattr(suds.sax.parser.Parser, "parse", self)
+        monkeypatch.setattr(asyncsuds.sax.parser.Parser, "parse", self)
 
     def reset(self):
         self.counter = 0
@@ -156,7 +156,7 @@ class MockPickleLoad:
 
     def apply(self, monkeypatch):
         """Monkeypatch suds.cache module's pickle.load()."""
-        monkeypatch.setattr(suds.cache.pickle, "load", self)
+        monkeypatch.setattr(asyncsuds.cache.pickle, "load", self)
 
     def reset(self):
         self.counter = 0
@@ -212,7 +212,7 @@ file_cache_item_expiration_test_data = ([
     ("put", ["id", "object"])))
 def test_Cache_methods_abstract(monkeypatch, method_name, params):
     monkeypatch.delitem(locals(), "e", False)
-    cache = suds.cache.Cache()
+    cache = asyncsuds.cache.Cache()
     f = getattr(cache, method_name)
     e = pytest.raises(Exception, f, *params).value
     try:
@@ -226,9 +226,9 @@ class TestDefaultFileCacheLocation:
     """Default FileCache cache location handling tests."""
 
     @pytest.mark.parametrize("cache_class", (
-        suds.cache.DocumentCache,
-        suds.cache.FileCache,
-        suds.cache.ObjectCache))
+        asyncsuds.cache.DocumentCache,
+        asyncsuds.cache.FileCache,
+        asyncsuds.cache.ObjectCache))
     def test_basic(self, tmpdir, cache_class):
         """
         Test default FileCache folder usage.
@@ -378,12 +378,12 @@ class TestDocumentCache:
 
     def compare_document_to_content(self, document, content):
         """Assert that the given XML document and content match."""
-        assert document.__class__ is suds.sax.document.Document
+        assert document.__class__ is asyncsuds.sax.document.Document
         elements = document.getChildren()
         assert len(elements) == 1
         element = elements[0]
-        assert element.__class__ is suds.sax.element.Element
-        assert suds.byte_str(str(element)) == content
+        assert element.__class__ is asyncsuds.sax.element.Element
+        assert asyncsuds.byte_str(str(element)) == content
 
     @staticmethod
     def construct_XML(element_name="Elemento"):
@@ -397,7 +397,7 @@ class TestDocumentCache:
         #TODO: Update the tests in this group to no longer depend on the exact
         # input XML data formatting. They currently expect it to be formatted
         # exactly as what gets read back from their DocumentCache.
-        content = suds.byte_str("""\
+        content = asyncsuds.byte_str("""\
 <xsd:element name="%s">
    <xsd:simpleType>
       <xsd:restriction base="xsd:string">
@@ -407,14 +407,14 @@ class TestDocumentCache:
       </xsd:restriction>
    </xsd:simpleType>
 </xsd:element>""" % (element_name,))
-        xml = suds.sax.parser.Parser().parse(suds.BytesIO(content))
-        assert xml.__class__ is suds.sax.document.Document
+        xml = asyncsuds.sax.parser.Parser().parse(asyncsuds.BytesIO(content))
+        assert xml.__class__ is asyncsuds.sax.document.Document
         return content, xml
 
     def test_cache_document(self, tmpdir):
         cache_item_id = "unga1"
-        cache = suds.cache.DocumentCache(tmpdir.strpath)
-        assert isinstance(cache, suds.cache.FileCache)
+        cache = asyncsuds.cache.DocumentCache(tmpdir.strpath)
+        assert isinstance(cache, asyncsuds.cache.FileCache)
         assert cache.get(cache_item_id) is None
         content, document = self.construct_XML()
         cache.put(cache_item_id, document)
@@ -422,8 +422,8 @@ class TestDocumentCache:
 
     def test_cache_element(self, tmpdir):
         cache_item_id = "unga1"
-        cache = suds.cache.DocumentCache(tmpdir.strpath)
-        assert isinstance(cache, suds.cache.FileCache)
+        cache = asyncsuds.cache.DocumentCache(tmpdir.strpath)
+        assert isinstance(cache, asyncsuds.cache.FileCache)
         assert cache.get(cache_item_id) is None
         content, document = self.construct_XML()
         cache.put(cache_item_id, document.root())
@@ -438,7 +438,7 @@ class TestDocumentCache:
         mock_open = MockFileOpener(fail_open=True)
 
         cache_folder = tmpdir.strpath
-        cache = suds.cache.DocumentCache(cache_folder)
+        cache = asyncsuds.cache.DocumentCache(cache_folder)
         content1, document1 = self.construct_XML("One")
         content2, document2 = self.construct_XML("Two")
         assert content1 != content2
@@ -488,7 +488,7 @@ class TestDocumentCache:
 
         """
         cache_folder = tmpdir.strpath
-        cache = suds.cache.DocumentCache(cache_folder)
+        cache = asyncsuds.cache.DocumentCache(cache_folder)
         content1, document1 = self.construct_XML("Eins")
         content2, document2 = self.construct_XML("Zwei")
         cache.put("unga1", document1)
@@ -526,14 +526,14 @@ class TestDocumentCache:
     def test_item_expiration(self, tmpdir, monkeypatch, duration, current_time,
             expect_remove):
         """See TestFileCache.item_expiration_test_worker() for more info."""
-        cache = suds.cache.DocumentCache(tmpdir.strpath, **duration)
+        cache = asyncsuds.cache.DocumentCache(tmpdir.strpath, **duration)
         content, document = self.construct_XML()
         cache.put("willy", document)
         TestFileCache.item_expiration_test_worker(cache, "willy", monkeypatch,
             current_time, expect_remove)
 
     def test_repeated_reads(self, tmpdir):
-        cache = suds.cache.DocumentCache(tmpdir.strpath)
+        cache = asyncsuds.cache.DocumentCache(tmpdir.strpath)
         content, document = self.construct_XML()
         cache.put("unga1", document)
         read_XML = cache.get("unga1").str()
@@ -571,7 +571,7 @@ class TestFileCache:
         the test file's expected expiration time.
 
         """
-        assert isinstance(cache, suds.cache.FileCache)
+        assert isinstance(cache, asyncsuds.cache.FileCache)
         filepath = cache._FileCache__filename(id)
         assert os.path.isfile(filepath)
         file_timestamp = os.path.getctime(filepath)
@@ -593,27 +593,27 @@ class TestFileCache:
         assert os.path.isfile(filepath) == (not expect_remove)
 
     def test_basic_construction(self):
-        cache = suds.cache.FileCache()
-        assert isinstance(cache, suds.cache.Cache)
+        cache = asyncsuds.cache.FileCache()
+        assert isinstance(cache, asyncsuds.cache.Cache)
         assert cache.duration.__class__ is datetime.timedelta
 
     def test_cached_content_empty(self, tmpdir):
         cache_folder = tmpdir.strpath
-        cache = suds.cache.FileCache(cache_folder)
+        cache = asyncsuds.cache.FileCache(cache_folder)
         cache.put("unga1", value_empty)
         assert cache.get("unga1") == value_empty
         _assert_empty_cache_folder(cache_folder, expected=False)
 
     def test_cached_content_unicode(self, tmpdir):
         cache_folder = tmpdir.strpath
-        cache = suds.cache.FileCache(cache_folder)
+        cache = asyncsuds.cache.FileCache(cache_folder)
         cache.put("unga1", value_unicode)
         assert cache.get("unga1") == value_unicode
         _assert_empty_cache_folder(cache_folder, expected=False)
 
     def test_clear(self, tmpdir):
         cache_folder1 = tmpdir.join("fungus").strpath
-        cache1 = suds.cache.FileCache(cache_folder1)
+        cache1 = asyncsuds.cache.FileCache(cache_folder1)
         cache1.put("unga1", value_p1)
         _assert_empty_cache_folder(cache_folder1, expected=False)
         cache1.put("unga2", value_p2)
@@ -634,7 +634,7 @@ class TestFileCache:
         _assert_empty_cache_folder(cache_folder1, expected=False)
 
         cache_folder2 = tmpdir.join("broccoli").strpath
-        cache2 = suds.cache.FileCache(cache_folder2)
+        cache2 = asyncsuds.cache.FileCache(cache_folder2)
         cache2.put("unga2", value_f2)
         assert cache2.get("unga2") == value_f2
         assert cache1.get("unga2") == value_p2
@@ -649,18 +649,18 @@ class TestFileCache:
 
     def test_close_leaves_cached_files_behind(self, tmpdir):
         cache_folder1 = tmpdir.join("ana").strpath
-        cache1 = suds.cache.FileCache(cache_folder1)
+        cache1 = asyncsuds.cache.FileCache(cache_folder1)
         cache1.put("unga1", value_p1)
         cache1.put("unga2", value_p2)
 
         cache_folder2 = tmpdir.join("nan").strpath
-        cache2 = suds.cache.FileCache(cache_folder2)
+        cache2 = asyncsuds.cache.FileCache(cache_folder2)
         cache2.put("unga2", value_f2)
         cache2.put("unga3", value_f3)
 
         del cache1
 
-        cache11 = suds.cache.FileCache(cache_folder1)
+        cache11 = asyncsuds.cache.FileCache(cache_folder1)
         assert cache11.get("unga1") == value_p1
         assert cache11.get("unga2") == value_p2
         assert cache2.get("unga2") == value_f2
@@ -668,7 +668,7 @@ class TestFileCache:
 
     def test_get_put(self, tmpdir):
         cache_folder1 = tmpdir.join("firefly").strpath
-        cache1 = suds.cache.FileCache(cache_folder1)
+        cache1 = asyncsuds.cache.FileCache(cache_folder1)
         _assert_empty_cache_folder(cache_folder1)
         assert cache1.get("unga1") is None
         cache1.put("unga1", value_p1)
@@ -683,7 +683,7 @@ class TestFileCache:
         assert cache1.get("unga2") == value_p2
 
         cache_folder2 = tmpdir.join("semper fi").strpath
-        cache2 = suds.cache.FileCache(cache_folder2)
+        cache2 = asyncsuds.cache.FileCache(cache_folder2)
         _assert_empty_cache_folder(cache_folder2)
         assert cache2.get("unga2") is None
         cache2.put("unga2", value_f2)
@@ -707,7 +707,7 @@ class TestFileCache:
         assert cache2.get("unga3") == value_f3
 
     def test_independent_item_expirations(self, tmpdir, monkeypatch):
-        cache = suds.cache.FileCache(tmpdir.strpath, days=1)
+        cache = asyncsuds.cache.FileCache(tmpdir.strpath, days=1)
         cache.put("unga1", value_p1)
         cache.put("unga2", value_p2)
         cache.put("unga3", value_f2)
@@ -760,13 +760,13 @@ class TestFileCache:
     def test_item_expiration(self, tmpdir, monkeypatch, duration, current_time,
             expect_remove):
         """See TestFileCache.item_expiration_test_worker() for more info."""
-        cache = suds.cache.FileCache(tmpdir.strpath, **duration)
+        cache = asyncsuds.cache.FileCache(tmpdir.strpath, **duration)
         cache.put("unga1", value_p1)
         TestFileCache.item_expiration_test_worker(cache, "unga1", monkeypatch,
             current_time, expect_remove)
 
     def test_non_default_location(self, tmpdir):
-        FileCache = suds.cache.FileCache
+        FileCache = asyncsuds.cache.FileCache
 
         cache_folder1 = tmpdir.join("flip-flop1").strpath
         assert not os.path.isdir(cache_folder1)
@@ -780,7 +780,7 @@ class TestFileCache:
 
     def test_purge(self, tmpdir):
         cache_folder1 = tmpdir.join("flamenco").strpath
-        cache1 = suds.cache.FileCache(cache_folder1)
+        cache1 = asyncsuds.cache.FileCache(cache_folder1)
         cache1.put("unga1", value_p1)
         assert cache1.get("unga1") == value_p1
         cache1.purge("unga1")
@@ -796,7 +796,7 @@ class TestFileCache:
         cache1.put("unga1", value_p111)
 
         cache_folder2 = tmpdir.join("shadow").strpath
-        cache2 = suds.cache.FileCache(cache_folder2)
+        cache2 = asyncsuds.cache.FileCache(cache_folder2)
         cache2.put("unga2", value_f2)
         cache2.purge("unga2")
         _assert_empty_cache_folder(cache_folder2)
@@ -806,7 +806,7 @@ class TestFileCache:
 
     def test_reused_cache_folder(self, tmpdir):
         cache_folder = tmpdir.strpath
-        cache1 = suds.cache.FileCache(cache_folder)
+        cache1 = asyncsuds.cache.FileCache(cache_folder)
         _assert_empty_cache_folder(cache_folder)
         assert cache1.get("unga1") is None
         cache1.put("unga1", value_p1)
@@ -819,7 +819,7 @@ class TestFileCache:
         assert cache1.get("unga1") == value_p11
         assert cache1.get("unga2") == value_p2
 
-        cache2 = suds.cache.FileCache(cache_folder)
+        cache2 = asyncsuds.cache.FileCache(cache_folder)
         assert cache2.get("unga1") == value_p11
         assert cache2.get("unga2") == value_p2
         cache2.put("unga2", value_f2)
@@ -850,27 +850,27 @@ class TestFileCache:
         {"weeks": -1},
         {"weeks": 1, "days": 2, "hours": 7, "minutes": 0, "seconds": -712}))
     def test_set_durations(self, tmpdir, params):
-        cache = suds.cache.FileCache(tmpdir.strpath, **params)
+        cache = asyncsuds.cache.FileCache(tmpdir.strpath, **params)
         assert cache.duration == datetime.timedelta(**params)
 
     def test_version(self, tmpdir):
         fake_version_info = "--- fake version info ---"
-        assert suds.__version__ != fake_version_info
+        assert asyncsuds.__version__ != fake_version_info
 
         version_file = tmpdir.join("version")
         cache_folder = tmpdir.strpath
-        cache = suds.cache.FileCache(cache_folder)
-        assert version_file.read() == suds.__version__
+        cache = asyncsuds.cache.FileCache(cache_folder)
+        assert version_file.read() == asyncsuds.__version__
         cache.put("unga1", value_p1)
 
         version_file.write(fake_version_info)
         assert cache.get("unga1") == value_p1
 
-        cache2 = suds.cache.FileCache(cache_folder)
+        cache2 = asyncsuds.cache.FileCache(cache_folder)
         _assert_empty_cache_folder(cache_folder)
         assert cache.get("unga1") is None
         assert cache2.get("unga1") is None
-        assert version_file.read() == suds.__version__
+        assert version_file.read() == asyncsuds.__version__
         cache.put("unga1", value_p11)
         cache.put("unga2", value_p22)
 
@@ -878,18 +878,18 @@ class TestFileCache:
         assert cache.get("unga1") == value_p11
         assert cache.get("unga2") == value_p22
 
-        cache3 = suds.cache.FileCache(cache_folder)
+        cache3 = asyncsuds.cache.FileCache(cache_folder)
         _assert_empty_cache_folder(cache_folder)
         assert cache.get("unga1") is None
         assert cache.get("unga2") is None
         assert cache2.get("unga1") is None
         assert cache3.get("unga1") is None
-        assert version_file.read() == suds.__version__
+        assert version_file.read() == asyncsuds.__version__
 
 
 def test_NoCache(monkeypatch):
-    cache = suds.cache.NoCache()
-    assert isinstance(cache, suds.cache.Cache)
+    cache = asyncsuds.cache.NoCache()
+    assert isinstance(cache, asyncsuds.cache.Cache)
 
     assert cache.get("id") == None
     cache.put("id", "something")
@@ -913,8 +913,8 @@ def test_NoCache(monkeypatch):
 class TestObjectCache:
 
     def test_basic(self, tmpdir):
-        cache = suds.cache.ObjectCache(tmpdir.strpath)
-        assert isinstance(cache, suds.cache.FileCache)
+        cache = asyncsuds.cache.ObjectCache(tmpdir.strpath)
+        assert isinstance(cache, asyncsuds.cache.FileCache)
         assert cache.get("unga1") is None
         assert cache.get("unga2") is None
         cache.put("unga1", InvisibleMan(1))
@@ -935,7 +935,7 @@ class TestObjectCache:
         mock_open = MockFileOpener(fail_open=True)
 
         cache_folder = tmpdir.strpath
-        cache = suds.cache.ObjectCache(cache_folder)
+        cache = asyncsuds.cache.ObjectCache(cache_folder)
         cache.put("unga1", InvisibleMan(1))
 
         mock_open.apply(monkeypatch)
@@ -982,7 +982,7 @@ class TestObjectCache:
 
         """
         cache_folder = tmpdir.strpath
-        cache = suds.cache.ObjectCache(cache_folder)
+        cache = asyncsuds.cache.ObjectCache(cache_folder)
         cache.put("unga1", InvisibleMan(1))
 
         mock.apply(monkeypatch)
@@ -1018,7 +1018,7 @@ class TestObjectCache:
     def test_item_expiration(self, tmpdir, monkeypatch, duration, current_time,
             expect_remove):
         """See TestFileCache.item_expiration_test_worker() for more info."""
-        cache = suds.cache.ObjectCache(tmpdir.strpath, **duration)
+        cache = asyncsuds.cache.ObjectCache(tmpdir.strpath, **duration)
         cache.put("silly", InvisibleMan(666))
         TestFileCache.item_expiration_test_worker(cache, "silly", monkeypatch,
             current_time, expect_remove)

@@ -20,7 +20,7 @@ Suds SAX module's special character encoder profiler.
 
 """
 
-import suds.sax.enc
+import asyncsuds.sax.enc
 import tests.profiling
 
 import sys
@@ -54,10 +54,10 @@ class Profiler(tests.profiling.ProfilerBase):
         print("  decode input data length: %d" % (len(self.decode_input),))
 
     def decode(self):
-        suds.sax.enc.Encoder().decode(self.decode_input)
+        asyncsuds.sax.enc.Encoder().decode(self.decode_input)
 
     def encode(self):
-        suds.sax.enc.Encoder().encode(self.encode_input)
+        asyncsuds.sax.enc.Encoder().encode(self.encode_input)
 
     def __construct_input(self, long_input, replacements, cdata, encoded):
         """Construct profiling input data matching the given parameters."""

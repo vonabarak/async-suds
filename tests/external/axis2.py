@@ -16,8 +16,8 @@
 import sys
 sys.path.append('../../')
 
-from suds import *
-from suds.client import Client
+from asyncsuds import *
+from asyncsuds.client import Client
 
 from datetime import datetime
 

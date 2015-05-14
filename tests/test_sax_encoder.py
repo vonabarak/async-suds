@@ -26,7 +26,7 @@ if __name__ == "__main__":
     import testutils
     testutils.run_using_pytest(globals())
 
-import suds.sax.enc
+import asyncsuds.sax.enc
 
 import pytest
 
@@ -159,7 +159,7 @@ symmetric_decoded_encoded_test_data__broken_encode = [
     ("&amp;apos;", "&apos;"),
     ("&amp;quot;", "&quot;")])
 def test_decode(input, expected):
-    assert suds.sax.enc.Encoder().decode(input) == expected
+    assert asyncsuds.sax.enc.Encoder().decode(input) == expected
 
 
 @pytest.mark.parametrize(("input", "expected"),
@@ -179,4 +179,4 @@ def test_decode(input, expected):
     ("&apos;", "&apos;"),
     ("&quot;", "&quot;")])
 def test_encode(input, expected):
-    assert suds.sax.enc.Encoder().encode(input) == expected
+    assert asyncsuds.sax.enc.Encoder().encode(input) == expected

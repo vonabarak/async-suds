@@ -26,9 +26,9 @@ if __name__ == "__main__":
     import testutils
     testutils.run_using_pytest(globals())
 
-import suds
-from suds.sax.element import Element
-import suds.sax.parser
+import asyncsuds
+from asyncsuds.sax.element import Element
+import asyncsuds.sax.parser
 
 import pytest
 import six
@@ -141,8 +141,8 @@ class TestStringRepresentation:
 
     @staticmethod
     def create_test_element(content=str_formatted_xml):
-        input_data = suds.byte_str(content)
-        xml = suds.sax.parser.Parser().parse(suds.BytesIO(input_data))
+        input_data = asyncsuds.byte_str(content)
+        xml = asyncsuds.sax.parser.Parser().parse(asyncsuds.BytesIO(input_data))
         element = xml.root()
         assert element.__class__ is Element
         return element
@@ -150,7 +150,7 @@ class TestStringRepresentation:
     @pytest.mark.skipif(sys.version_info >= (3,), reason="Python 2 specific")
     def test_convert_to_byte_str(self):
         element = self.create_test_element()
-        expected = suds.byte_str(element.str())
+        expected = asyncsuds.byte_str(element.str())
         assert str(element) == expected
 
     def test_convert_to_unicode(self):

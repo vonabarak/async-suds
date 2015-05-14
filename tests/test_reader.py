@@ -26,9 +26,9 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds
-import suds.options
-import suds.reader
+import asyncsuds
+import asyncsuds.options
+import asyncsuds.reader
 
 
 class TestCacheItemNameMangling:
@@ -38,7 +38,7 @@ class TestCacheItemNameMangling:
         test_item_name1 = "oh my god"
         test_item_name2 = "ha ha ha"
         test_item_suffix = "that's some funky sh*t"
-        reader = suds.reader.Reader(suds.options.Options())
+        reader = asyncsuds.reader.Reader(asyncsuds.options.Options())
         mangled1 = reader.mangle(test_item_name1, test_item_suffix)
         mangled2 = reader.mangle(test_item_name2, test_item_suffix)
         assert mangled1 != mangled2
@@ -56,7 +56,7 @@ class TestCacheItemNameMangling:
         """
         test_item_name = "test string"
         test_item_suffix = "test suffix"
-        reader = suds.reader.Reader(suds.options.Options())
+        reader = asyncsuds.reader.Reader(asyncsuds.options.Options())
         expected = reader.mangle(test_item_name, test_item_suffix)
         test_file = tmpdir.join("test_mangle.py")
         test_file.write("""
@@ -73,8 +73,8 @@ assert mangled == '%(expected)s'
     def test_repeatable__different_readers(self):
         test_item_name = "R2D2"
         test_item_suffix = "C3P0"
-        reader1 = suds.reader.Reader(suds.options.Options())
-        reader2 = suds.reader.Reader(suds.options.Options())
+        reader1 = asyncsuds.reader.Reader(asyncsuds.options.Options())
+        reader2 = asyncsuds.reader.Reader(asyncsuds.options.Options())
         mangled1 = reader1.mangle(test_item_name, test_item_suffix)
         mangled2 = reader2.mangle(test_item_name, test_item_suffix)
         assert mangled1 == mangled2
@@ -82,7 +82,7 @@ assert mangled == '%(expected)s'
     def test_repeatable__same_reader(self):
         test_item_name = "han solo"
         test_item_suffix = "chewbacca"
-        reader = suds.reader.Reader(suds.options.Options())
+        reader = asyncsuds.reader.Reader(asyncsuds.options.Options())
         mangled1 = reader.mangle(test_item_name, test_item_suffix)
         mangled2 = reader.mangle(test_item_name, test_item_suffix)
         assert mangled1 == mangled2
@@ -90,6 +90,6 @@ assert mangled == '%(expected)s'
     def test_suffix(self):
         test_item_name = "and a one! and a two! and a one - two - three!"
         test_item_suffix = "pimpl"
-        reader = suds.reader.Reader(suds.options.Options())
+        reader = asyncsuds.reader.Reader(asyncsuds.options.Options())
         mangled = reader.mangle(test_item_name, test_item_suffix)
         assert mangled.endswith(test_item_suffix)

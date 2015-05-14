@@ -20,8 +20,8 @@ Package containing different utilities used for suds project testing.
 
 """
 
-import suds.client
-import suds.store
+import asyncsuds.client
+import asyncsuds.store
 
 import os
 import subprocess
@@ -50,15 +50,15 @@ def client_from_wsdl(wsdl_content, *args, **kwargs):
     store.
 
     """
-    assert wsdl_content.__class__ is suds.byte_str_class, "bad test data"
+    assert wsdl_content.__class__ is asyncsuds.byte_str_class, "bad test data"
     store = kwargs.get("documentStore")
     if store is None:
-        store = suds.store.DocumentStore()
+        store = asyncsuds.store.DocumentStore()
         kwargs.update(documentStore=store)
     test_file_id = "whatchamacallit"
     store.update({test_file_id: wsdl_content})
     kwargs.update(cache=None)
-    return suds.client.Client("suds://" + test_file_id, *args, **kwargs)
+    return asyncsuds.client.Client("suds://" + test_file_id, *args, **kwargs)
 
 
 def run_test_process(script):
@@ -91,7 +91,7 @@ if sys.version_info >= (3, 0):
 else:
     exec_file = execfile
 exec_file(%(script)r)
-""" % {"suds.__version__": suds.__version__,
+""" % {"suds.__version__": asyncsuds.__version__,
     "script": script.basename,
     "sys.path": sys_path})
     if popen.returncode != 0 or err or out:
@@ -235,4 +235,4 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 </wsdl:definitions>
 """ % (web_service_URL,))
 
-    return suds.byte_str("\n".join(wsdl))
+    return asyncsuds.byte_str("\n".join(wsdl))

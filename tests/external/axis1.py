@@ -20,11 +20,11 @@
 import sys
 sys.path.append('../../')
 
-from suds import WebFault
-from suds.client import Client
-from suds.sudsobject import Object
-from suds.transport.https import HttpAuthenticated
-from suds.plugin import *
+from asyncsuds import WebFault
+from asyncsuds.client import Client
+from asyncsuds.sudsobject import Object
+from asyncsuds.transport.https import HttpAuthenticated
+from asyncsuds.plugin import *
 
 import traceback as tb
 

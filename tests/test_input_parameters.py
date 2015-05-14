@@ -39,7 +39,7 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds
+import asyncsuds
 
 import pytest
 
@@ -345,7 +345,7 @@ def test_builtin_typed_element_parameter(part_name):
     a built-in typed element.
 
     """
-    wsdl = suds.byte_str("""\
+    wsdl = asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -387,7 +387,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     method = client.wsdl.services[0].ports[0].methods["f"]
     assert not method.soap.input.body.wrapped
     binding = method.binding.input
-    assert binding.__class__ is suds.bindings.document.Document
+    assert binding.__class__ is asyncsuds.bindings.document.Document
     my_element = client.wsdl.schema.elements["MyElement", "my-namespace"]
 
     param_defs = binding.param_defs(method)
@@ -409,7 +409,7 @@ def test_explicitly_wrapped_parameter(part_name):
     method = client.wsdl.services[0].ports[0].methods["f"]
     assert not method.soap.input.body.wrapped
     binding = method.binding.input
-    assert binding.__class__ is suds.bindings.document.Document
+    assert binding.__class__ is asyncsuds.bindings.document.Document
     wrapper = client.wsdl.schema.elements["Wrapper", "my-namespace"]
 
     param_defs = binding.param_defs(method)
@@ -470,19 +470,19 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>""")
-    wsdl = suds.byte_str("".join(wsdl))
+    wsdl = asyncsuds.byte_str("".join(wsdl))
     client = testutils.client_from_wsdl(wsdl, nosend=True)
 
     # Collect references to required WSDL model content.
     method = client.wsdl.services[0].ports[0].methods["f"]
     assert not method.soap.input.body.wrapped
     binding = method.binding.input
-    assert binding.__class__ is suds.bindings.document.Document
+    assert binding.__class__ is asyncsuds.bindings.document.Document
     my_type = client.wsdl.schema.types["MyType", "my-namespace"]
 
     # Construct expected parameter definitions.
     expected_param_defs = [
-        (param_name, [suds.bindings.binding.PartElement, param_name, my_type])
+        (param_name, [asyncsuds.bindings.binding.PartElement, param_name, my_type])
         for param_name in param_names]
 
     param_defs = binding.param_defs(method)
@@ -509,7 +509,7 @@ def test_unwrapped_parameter(xsd_type):
     method = client.wsdl.services[0].ports[0].methods["f"]
     assert method.soap.input.body.wrapped
     binding = method.binding.input
-    assert binding.__class__ is suds.bindings.document.Document
+    assert binding.__class__ is asyncsuds.bindings.document.Document
     wrapper = client.wsdl.schema.elements["Wrapper", "my-namespace"]
 
     # Construct expected parameter definitions.
@@ -534,7 +534,7 @@ def test_unwrapped_parameter_part_name(part_name):
     method = client.wsdl.services[0].ports[0].methods["f"]
     assert method.soap.input.body.wrapped
     binding = method.binding.input
-    assert binding.__class__ is suds.bindings.document.Document
+    assert binding.__class__ is asyncsuds.bindings.document.Document
     wrapper = client.wsdl.schema.elements["Wrapper", "my-namespace"]
 
     # Construct expected parameter definitions.
@@ -636,7 +636,7 @@ def _unwrappable_wsdl(part_name, param_schema):
     'param_schema' argument.
 
     """
-    return suds.byte_str("""\
+    return asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"

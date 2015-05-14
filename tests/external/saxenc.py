@@ -18,8 +18,8 @@
 # sax encoding/decoding test.
 #
 
-from suds.sax.element import Element
-from suds.sax.parser import Parser
+from asyncsuds.sax.element import Element
+from asyncsuds.sax.parser import Parser
 
 def basic():
     xml = "<a>Me &amp;&amp; &lt;b&gt;my&lt;/b&gt; shadow&apos;s &lt;i&gt;dog&lt;/i&gt; love to &apos;play&apos; and sing &quot;la,la,la&quot;;</a>"

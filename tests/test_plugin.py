@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
 import pytest
 
-from suds.plugin import (DocumentContext, DocumentPlugin, InitContext,
+from asyncsuds.plugin import (DocumentContext, DocumentPlugin, InitContext,
     InitPlugin, MessageContext, MessagePlugin, Plugin, PluginContainer,
     PluginDomain)
 

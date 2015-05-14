@@ -26,9 +26,9 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds
-import suds.transport
-import suds.transport.http
+import asyncsuds
+import asyncsuds.transport
+import asyncsuds.transport.http
 
 import pytest
 from six import u
@@ -154,7 +154,7 @@ class SendMethodFixture:
         self.name = name
 
     def __call__(self, transport, *args, **kwargs):
-        assert isinstance(transport, suds.transport.http.HttpTransport)
+        assert isinstance(transport, asyncsuds.transport.http.HttpTransport)
         return getattr(transport, self.name)(*args, **kwargs)
 
 
@@ -170,13 +170,13 @@ test_URL_data = (
 
 def assert_default_transport(transport):
     """Test utility verifying default constructed transport content."""
-    assert isinstance(transport, suds.transport.http.HttpTransport)
+    assert isinstance(transport, asyncsuds.transport.http.HttpTransport)
     assert transport.urlopener is None
 
 
 def create_request(url="protocol://default-url", data=u("Rumpelstiltskin")):
     """Test utility constructing a suds.transport.Request instance."""
-    return suds.transport.Request(url, data)
+    return asyncsuds.transport.Request(url, data)
 
 
 @pytest.fixture(params=["open", "send"])
@@ -220,7 +220,7 @@ def test_authenticated_http_add_credentials_to_request(input):
 
     username = input.get("username", None)
     password = input.get("password", None)
-    t = suds.transport.http.HttpAuthenticated(**input)
+    t = asyncsuds.transport.http.HttpAuthenticated(**input)
     r = MockRequest()
     t.addcredentials(r)
     assert_Authorization_header(r, username, password)
@@ -233,13 +233,13 @@ def test_authenticated_http_add_credentials_to_request(input):
 def test_construct_authenticated_http(input):
     expected_username = input.get("username", None)
     expected_password = input.get("password", None)
-    transport = suds.transport.http.HttpAuthenticated(**input)
+    transport = asyncsuds.transport.http.HttpAuthenticated(**input)
     assert transport.credentials() == (expected_username, expected_password)
     assert_default_transport(transport)
 
 
 def test_construct_http():
-    transport = suds.transport.http.HttpTransport()
+    transport = asyncsuds.transport.http.HttpTransport()
     assert_default_transport(transport)
 
 
@@ -269,7 +269,7 @@ def test_sending_using_network_sockets(send_method, monkeypatch):
             return [(None, None, None, None, self.host_address)]
         def mock_reset(self):
             super(Mocker, self).mock_reset()
-            self.mock_sent_data = suds.byte_str()
+            self.mock_sent_data = asyncsuds.byte_str()
             self.mock_socket = None
         def socket(self, *args, **kwargs):
             assert self.mock_socket is None
@@ -308,14 +308,14 @@ def test_sending_using_network_sockets(send_method, monkeypatch):
     host_port = "%s:%s" % (host, port)
     url_relative = "svc"
     url = "http://%s/%s" % (host_port, url_relative)
-    partial_ascii_byte_data = suds.byte_str("Muka-laka-hiki")
+    partial_ascii_byte_data = asyncsuds.byte_str("Muka-laka-hiki")
     non_ascii_byte_data = u("\u0414\u043C\u0438 \u0442\u0440").encode("utf-8")
     non_ascii_byte_data += partial_ascii_byte_data
     mocker = Mocker(host, port)
     monkeypatch.setattr("socket.getaddrinfo", mocker.getaddrinfo)
     monkeypatch.setattr("socket.socket", mocker.socket)
-    request = suds.transport.Request(url, non_ascii_byte_data)
-    transport = suds.transport.http.HttpTransport()
+    request = asyncsuds.transport.Request(url, non_ascii_byte_data)
+    transport = asyncsuds.transport.http.HttpTransport()
     expected_sent_data_start, expected_request_data_send = {
         "open": ("GET", False),
         "send": ("POST", True)}[send_method.name]
@@ -340,10 +340,10 @@ def test_sending_using_network_sockets(send_method, monkeypatch):
     # implement the settimeout() method.
     assert mocker.mock_socket.mock_call_count("settimeout") in (0, 1)
     assert mocker.mock_socket.mock_reader.mock_call_count("readline") == 1
-    assert mocker.mock_sent_data.__class__ is suds.byte_str_class
+    assert mocker.mock_sent_data.__class__ is asyncsuds.byte_str_class
     expected_sent_data_start = "%s /%s HTTP/1.1\r\n" % (
         expected_sent_data_start, url_relative)
-    expected_sent_data_start = suds.byte_str(expected_sent_data_start)
+    expected_sent_data_start = asyncsuds.byte_str(expected_sent_data_start)
     assert mocker.mock_sent_data.startswith(expected_sent_data_start)
     assert host_port.encode("utf-8") in mocker.mock_sent_data
     if expected_request_data_send:
@@ -371,7 +371,7 @@ class TestSendingToURLWithAMissingProtocolIdentifier:
     @pytest.mark.skipif(sys.version_info >= (3,), reason="Python 2 specific")
     @invalid_URL_parametrization
     def test_python2(self, url, send_method):
-        transport = suds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur(MyException)
         request = create_request(url)
         pytest.raises(MyException, send_method, transport, request)
@@ -380,7 +380,7 @@ class TestSendingToURLWithAMissingProtocolIdentifier:
     @invalid_URL_parametrization
     def test_python3(self, url, send_method, monkeypatch):
         monkeypatch.delitem(locals(), "e", False)
-        transport = suds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur()
         request = create_request(url)
         e = pytest.raises(ValueError, send_method, transport, request)
@@ -443,12 +443,12 @@ class TestURLOpenerUsage:
         monkeypatch.delattr(locals(), "e", False)
         fp = MockFP()
         e_original = self.create_HTTPError(code=status_code, fp=fp)
-        t = suds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e_original)
         request = create_request()
 
         # Execute.
-        e = pytest.raises(suds.transport.TransportError, t.open, request).value
+        e = pytest.raises(asyncsuds.transport.TransportError, t.open, request).value
         try:
             # Verify.
             assert e.args == (str(e_original),)
@@ -471,12 +471,12 @@ class TestURLOpenerUsage:
 
         """
         e = self.create_HTTPError(code=status_code)
-        transport = suds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur(open_exception=e)
         wsdl = testutils.wsdl('<xsd:element name="o" type="xsd:string"/>',
             output="o", operation_name="f")
         client = testutils.client_from_wsdl(wsdl, transport=transport)
-        pytest.raises(suds.transport.TransportError, client.service.f)
+        pytest.raises(asyncsuds.transport.TransportError, client.service.f)
 
     @pytest.mark.xfail(reason="original suds library bug")
     @pytest.mark.parametrize("status_code", (
@@ -499,7 +499,7 @@ class TestURLOpenerUsage:
         # exception by attempting to access a non-existing 'None.message'
         # attribute internally.
         e = self.create_HTTPError(code=status_code)
-        transport = suds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur(open_exception=e)
         wsdl = testutils.wsdl('<xsd:element name="o" type="xsd:string"/>',
             output="o", operation_name="f")
@@ -513,7 +513,7 @@ class TestURLOpenerUsage:
 
         """
         e = MyException()
-        t = suds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e)
         assert pytest.raises(e.__class__, t.open, create_request()).value is e
 
@@ -540,12 +540,12 @@ class TestURLOpenerUsage:
         msg = object()
         fp = MockFP()
         e_original = self.create_HTTPError(msg=msg, code=status_code, fp=fp)
-        t = suds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e_original)
         request = create_request()
 
         # Execute.
-        e = pytest.raises(suds.transport.TransportError, t.send, request).value
+        e = pytest.raises(asyncsuds.transport.TransportError, t.send, request).value
         try:
             # Verify.
             assert len(e.args) == 1
@@ -567,7 +567,7 @@ class TestURLOpenerUsage:
 
         """
         e_original = self.create_HTTPError(code=status_code)
-        t = suds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e_original)
         assert t.send(create_request()) is None
 
@@ -582,7 +582,7 @@ class TestURLOpenerUsage:
             assert handlers[0].__class__ is ProxyHandler
             raise MyException
         monkeypatch.setattr(urllib_request, "build_opener", my_build_urlopener)
-        transport = suds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http.HttpTransport()
         request = create_request(url=url)
         pytest.raises(MyException, send_method, transport, request)
 
@@ -601,7 +601,7 @@ class TestURLOpenerUsage:
                 assert request.__class__ is urllib_request.Request
                 assert request.get_full_url() == url
                 raise MyException
-        transport = suds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http.HttpTransport()
         transport.urlopener = MockURLOpener()
         def my_build_urlopener(*args, **kwargs):
             pytest.fail("urllib build_opener() called when not expected.")
@@ -617,5 +617,5 @@ def _encode_basic_credentials(username, password):
     This is the value expected to be added to the 'Authorization' HTTP header.
 
     """
-    data = suds.byte_str("%s:%s" % (username, password))
+    data = asyncsuds.byte_str("%s:%s" % (username, password))
     return "Basic %s" % base64.b64encode(data).decode("utf-8")

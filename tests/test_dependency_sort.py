@@ -26,7 +26,7 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-from suds.xsd.depsort import dependency_sort
+from asyncsuds.xsd.depsort import dependency_sort
 
 import pytest
 from six import iteritems

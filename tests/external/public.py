@@ -17,9 +17,9 @@ import sys
 sys.path.append('../../')
 
 import traceback as tb
-import suds.metrics as metrics
-from suds import WebFault
-from suds.client import Client
+import asyncsuds.metrics as metrics
+from asyncsuds import WebFault
+from asyncsuds.client import Client
 
 
 errors = 0

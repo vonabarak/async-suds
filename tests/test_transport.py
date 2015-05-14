@@ -26,9 +26,9 @@ if __name__ == "__main__":
     import testutils
     testutils.run_using_pytest(globals())
 
-import suds
-from suds.transport import Reply, Request, Transport
-import suds.transport.options
+import asyncsuds
+from asyncsuds.transport import Reply, Request, Transport
+import asyncsuds.transport.options
 
 import pytest
 from six import b, text_type, u, unichr
@@ -40,7 +40,7 @@ class TestBaseTransportClass:
 
     def test_members(self):
         t = Transport()
-        assert t.options.__class__ is suds.transport.options.Options
+        assert t.options.__class__ is asyncsuds.transport.options.Options
 
     @pytest.mark.parametrize("method_name", ("open", "send"))
     def test_methods_should_be_abstract(self, monkeypatch, method_name):
@@ -163,7 +163,7 @@ MESSAGE:
 
     def test_string_representation_with_no_message(self):
         url = "look at my silly little URL"
-        headers = {suds.byte_str("yuck"): suds.byte_str("ptooiii...")}
+        headers = {asyncsuds.byte_str("yuck"): asyncsuds.byte_str("ptooiii...")}
         request = Request(url)
         request.headers = headers
         expected = u("""\

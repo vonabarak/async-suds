@@ -26,9 +26,9 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds.client
-import suds.sax.date
-from suds.xsd.sxbuiltin import (Factory, XAny, XBoolean, XBuiltin, XDate,
+import asyncsuds.client
+import asyncsuds.sax.date
+from asyncsuds.xsd.sxbuiltin import (Factory, XAny, XBoolean, XBuiltin, XDate,
     XDateTime, XDecimal, XFloat, XInteger, XLong, XString, XTime)
 from testutils.compare_sax import CompareSAX
 
@@ -77,7 +77,7 @@ def _def_mock_xsd_class(x_class_name):
         of its parent classes.
 
     """
-    x_class = getattr(suds.xsd.sxbuiltin, x_class_name)
+    x_class = getattr(asyncsuds.xsd.sxbuiltin, x_class_name)
     assert issubclass(x_class, XBuiltin)
     mock_class_name = "Mock" + x_class_name
     mock_class = type(mock_class_name, (x_class,), {
@@ -209,13 +209,13 @@ class TestXDate:
     def test_from_python_object__date(self):
         date = datetime.date(2013, 7, 24)
         translated = MockXDate().translate(date, topython=False)
-        assert translated.__class__ is suds.sax.date.Date
+        assert translated.__class__ is asyncsuds.sax.date.Date
         assert str(translated) == "2013-07-24"
 
     def test_from_python_object__datetime(self):
         dt = datetime.datetime(2013, 7, 24, 11, 59, 4)
         translated = MockXDate().translate(dt, topython=False)
-        assert translated.__class__ is suds.sax.date.Date
+        assert translated.__class__ is asyncsuds.sax.date.Date
         assert str(translated) == "2013-07-24"
 
     @pytest.mark.parametrize("source", (
@@ -246,7 +246,7 @@ class TestXDateTime:
     def test_from_python_object(self):
         dt = datetime.datetime(2021, 12, 31, 11, 25)
         translated = MockXDateTime().translate(dt, topython=False)
-        assert translated.__class__ is suds.sax.date.DateTime
+        assert translated.__class__ is asyncsuds.sax.date.DateTime
         assert str(translated) == "2021-12-31T11:25:00"
 
     @pytest.mark.parametrize("source", (
@@ -601,7 +601,7 @@ class TestXTime:
     def test_from_python_object(self):
         time = datetime.time(16, 53, 12)
         translated = MockXTime().translate(time, topython=False)
-        assert translated.__class__ is suds.sax.date.Time
+        assert translated.__class__ is asyncsuds.sax.date.Time
         assert str(translated) == "16:53:12"
 
     @pytest.mark.parametrize("source", (
@@ -753,7 +753,7 @@ def test_translation(monkeypatch):
 </Envelope>""" % (namespace,))
 
     # Process operation response - test unmarshalling.
-    response = client.service.f(__inject=dict(reply=suds.byte_str("""\
+    response = client.service.f(__inject=dict(reply=asyncsuds.byte_str("""\
 <?xml version="1.0"?>
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
   <Body>

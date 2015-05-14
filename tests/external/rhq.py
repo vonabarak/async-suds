@@ -21,8 +21,8 @@
 import sys
 sys.path.append('../../')
 
-from suds import WebFault
-from suds.client import Client
+from asyncsuds import WebFault
+from asyncsuds.client import Client
 
 import traceback as tb
 

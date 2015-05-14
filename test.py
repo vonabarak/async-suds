@@ -1,7 +1,7 @@
 __author__ = 'kamyar'
 
 import asyncio
-from suds.client import Client
+from asyncsuds.client import Client
 import logging
 
 

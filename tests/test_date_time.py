@@ -24,7 +24,7 @@ if __name__ == "__main__":
     import testutils
     testutils.run_using_pytest(globals())
 
-from suds.sax.date import (FixedOffsetTimezone, Date, DateTime, Time,
+from asyncsuds.sax.date import (FixedOffsetTimezone, Date, DateTime, Time,
     UtcTimezone)
 
 import pytest

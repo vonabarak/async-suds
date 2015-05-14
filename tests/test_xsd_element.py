@@ -27,11 +27,11 @@ if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
 
-import suds
-import suds.options
-import suds.sax.parser
-import suds.store
-import suds.xsd.schema
+import asyncsuds
+import asyncsuds.options
+import asyncsuds.sax.parser
+import asyncsuds.store
+import asyncsuds.xsd.schema
 
 import pytest
 from six import b
@@ -128,7 +128,7 @@ class TestElementForm:
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="ns-there">
     <element name="Referenced"/>
 </schema>"""
-        store = suds.store.DocumentStore({"there.xsd": b(schema_xml_there)})
+        store = asyncsuds.store.DocumentStore({"there.xsd": b(schema_xml_there)})
         schema = _parse_schema_xml(b(schema_xml_here), store)
         referenced_element = schema.elements["Referenced", "ns-there"]
         referencing_parent = schema.elements["Referencing", None]
@@ -175,7 +175,7 @@ def test_reference():
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="ns-there">
     <element name="Referenced"/>
 </schema>"""
-    store = suds.store.DocumentStore({"there.xsd": b(schema_xml_there)})
+    store = asyncsuds.store.DocumentStore({"there.xsd": b(schema_xml_there)})
     schema = _parse_schema_xml(b(schema_xml_here), store)
     referenced_element = schema.elements["Referenced", "ns-there"]
     referencing_parent = schema.elements["Referencing", None]
@@ -198,12 +198,12 @@ def _attribute_xml(name, value):
 
 def _parse_schema_xml(xml, documentStore=None):
     """Test utility constructing an XSD schema model from the given XML."""
-    parser = suds.sax.parser.Parser()
+    parser = asyncsuds.sax.parser.Parser()
     document = parser.parse(string=xml)
     root = document.root()
     url = "somewhere://over.the/rainbow"
     options_kwargs = {}
     if documentStore:
         options_kwargs.update(documentStore=documentStore)
-    options = suds.options.Options(**options_kwargs)
-    return suds.xsd.schema.Schema(root, url, options)
+    options = asyncsuds.options.Options(**options_kwargs)
+    return asyncsuds.xsd.schema.Schema(root, url, options)

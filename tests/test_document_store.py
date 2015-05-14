@@ -26,40 +26,40 @@ if __name__ == "__main__":
     import testutils
     testutils.run_using_pytest(globals())
 
-import suds
-import suds.store
+import asyncsuds
+import asyncsuds.store
 
 import pytest
 
 
 def test_accessing_DocumentStore_content():
-    content1 = suds.byte_str("one")
-    content2 = suds.byte_str("two")
-    content1_1 = suds.byte_str("one one")
+    content1 = asyncsuds.byte_str("one")
+    content2 = asyncsuds.byte_str("two")
+    content1_1 = asyncsuds.byte_str("one one")
 
-    store = suds.store.DocumentStore({"1": content1})
+    store = asyncsuds.store.DocumentStore({"1": content1})
     assert len(store) == 2
     _test_default_DocumentStore_content(store)
     _test_open(store, "1", content1)
 
-    store = suds.store.DocumentStore({"1": content1, "2": content2})
+    store = asyncsuds.store.DocumentStore({"1": content1, "2": content2})
     assert len(store) == 3
     _test_default_DocumentStore_content(store)
     _test_open(store, "1", content1)
     _test_open(store, "2", content2)
 
-    store = suds.store.DocumentStore(uno=content1, due=content2)
+    store = asyncsuds.store.DocumentStore(uno=content1, due=content2)
     assert len(store) == 3
     _test_default_DocumentStore_content(store)
     _test_open(store, "uno", content1)
     _test_open(store, "due", content2)
 
-    store = suds.store.DocumentStore({"1 1": content1_1})
+    store = asyncsuds.store.DocumentStore({"1 1": content1_1})
     assert len(store) == 2
     _test_default_DocumentStore_content(store)
     _test_open(store, "1 1", content1_1)
 
-    store = suds.store.DocumentStore({"1": content1, "1 1": content1_1})
+    store = asyncsuds.store.DocumentStore({"1": content1, "1 1": content1_1})
     assert len(store) == 3
     _test_default_DocumentStore_content(store)
     _test_open(store, "1", content1)
@@ -67,7 +67,7 @@ def test_accessing_DocumentStore_content():
 
 
 def test_accessing_missing_DocumentStore_content():
-    store = suds.store.DocumentStore()
+    store = asyncsuds.store.DocumentStore()
     assert store.open("missing-content") is None
     assert store.open("buga-wuga://missing-content") is None
     assert store.open("ftp://missing-content") is None
@@ -77,21 +77,21 @@ def test_accessing_missing_DocumentStore_content():
 
 
 def test_default_DocumentStore_instance():
-    assert len(suds.store.defaultDocumentStore) == 1
-    _test_default_DocumentStore_content(suds.store.defaultDocumentStore)
+    assert len(asyncsuds.store.defaultDocumentStore) == 1
+    _test_default_DocumentStore_content(asyncsuds.store.defaultDocumentStore)
 
 
 def test_empty_DocumentStore_instance_is_not_shared():
-    assert suds.store.DocumentStore() is not suds.store.defaultDocumentStore
-    assert suds.store.DocumentStore() is not suds.store.DocumentStore()
+    assert asyncsuds.store.DocumentStore() is not asyncsuds.store.defaultDocumentStore
+    assert asyncsuds.store.DocumentStore() is not asyncsuds.store.DocumentStore()
 
 
 def test_updating_DocumentStore_content():
-    content1 = suds.byte_str("one")
-    content2 = suds.byte_str("two")
-    content1_1 = suds.byte_str("one one")
+    content1 = asyncsuds.byte_str("one")
+    content2 = asyncsuds.byte_str("two")
+    content1_1 = asyncsuds.byte_str("one one")
 
-    store = suds.store.DocumentStore()
+    store = asyncsuds.store.DocumentStore()
     assert len(store) == 1
     _test_default_DocumentStore_content(store)
 
@@ -126,7 +126,7 @@ def test_updating_DocumentStore_content():
 
 def _test_default_DocumentStore_content(store):
     _test_open(store, "schemas.xmlsoap.org/soap/encoding/",
-        suds.store.soap5_encoding_schema)
+        asyncsuds.store.soap5_encoding_schema)
 
 
 def _test_open(store, location, expected_content):

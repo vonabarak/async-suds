@@ -31,8 +31,8 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds
-import suds.argparser
+import asyncsuds
+import asyncsuds.argparser
 
 import pytest
 
@@ -107,9 +107,9 @@ def test_binding_uses_argument_parsing(monkeypatch, binding_style):
         pass
     def raise_exception(*args, **kwargs):
         raise MyException
-    monkeypatch.setattr(suds.argparser._ArgParser, "__init__", raise_exception)
+    monkeypatch.setattr(asyncsuds.argparser._ArgParser, "__init__", raise_exception)
 
-    wsdl = suds.byte_str("""\
+    wsdl = asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -171,9 +171,9 @@ def test_binding_for_an_operation_with_no_input_uses_argument_parsing(
         pass
     def raise_exception(*args, **kwargs):
         raise MyException
-    monkeypatch.setattr(suds.argparser._ArgParser, "__init__", raise_exception)
+    monkeypatch.setattr(asyncsuds.argparser._ArgParser, "__init__", raise_exception)
 
-    wsdl = suds.byte_str("""\
+    wsdl = asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -258,7 +258,7 @@ def test_extra_positional_arguments(param_optional, args):
         was_were = "was"
     expected = "fru-fru() takes %s positional argument%s but %d %s given" % (
         takes, takes_plural_suffix, len(args), was_were)
-    _expect_error(TypeError, expected, suds.argparser.parse_args, "fru-fru",
+    _expect_error(TypeError, expected, asyncsuds.argparser.parse_args, "fru-fru",
         params, args, {}, param_processor.process, True)
 
     assert len(param_processor.params()) == param_count
@@ -305,7 +305,7 @@ def test_multiple_value_for_single_parameter_error(param_names, args, kwargs):
     expected = [message % (x,) for x in duplicates]
     if len(expected) == 1:
         expected = expected[0]
-    _expect_error(TypeError, expected, suds.argparser.parse_args, "q", params,
+    _expect_error(TypeError, expected, asyncsuds.argparser.parse_args, "q", params,
         args, kwargs, _do_nothing, True)
 
 
@@ -326,7 +326,7 @@ def test_not_reporting_extra_argument_errors():
     args = list(range(5))
     kwargs = {"p1": "p1", "p3": "p3", "x": 666}
     param_processor = MockParamProcessor()
-    args_required, args_allowed = suds.argparser.parse_args("w", params, args,
+    args_required, args_allowed = asyncsuds.argparser.parse_args("w", params, args,
         kwargs, param_processor.process, False)
 
     assert args_required == 1
@@ -380,7 +380,7 @@ def test_unexpected_keyword_argument(param_names, args, kwargs):
     expected = [message % (x,) for x in kwargs]
     if len(expected) == 1:
         expected = expected[0]
-    _expect_error(TypeError, expected, suds.argparser.parse_args, "pUFf",
+    _expect_error(TypeError, expected, asyncsuds.argparser.parse_args, "pUFf",
         params, args, kwargs, _do_nothing, True)
 
 
@@ -562,7 +562,7 @@ def test_unwrapped_arg_counts(expect_required, expect_allowed, param_defs):
         params.append((param_name, MockParamType(param_optional), ancestry))
     param_processor = MockParamProcessor()
     args = [object() for x in params]
-    args_required, args_allowed = suds.argparser.parse_args("w", params, args,
+    args_required, args_allowed = asyncsuds.argparser.parse_args("w", params, args,
         {}, param_processor.process, False)
 
     assert args_required == expect_required

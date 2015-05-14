@@ -32,8 +32,8 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds
-import suds.store
+import asyncsuds
+import asyncsuds.store
 from testutils.compare_sax import CompareSAX
 
 import pytest
@@ -420,7 +420,7 @@ def test_disabling_automated_simple_interface_unwrapping():
 
 
 def test_element_references_to_different_namespaces():
-    wsdl = suds.byte_str("""\
+    wsdl = asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="first-namespace"
     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -473,7 +473,7 @@ def test_element_references_to_different_namespaces():
   </wsdl:service>
 </wsdl:definitions>""")
 
-    external_schema = suds.byte_str("""\
+    external_schema = asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <schema
     targetNamespace="second-namespace"
@@ -482,9 +482,9 @@ def test_element_references_to_different_namespaces():
   <element name="external" type="string"/>
 </schema>""")
 
-    store = suds.store.DocumentStore(external_schema=external_schema,
+    store = asyncsuds.store.DocumentStore(external_schema=external_schema,
         wsdl=wsdl)
-    client = suds.client.Client("suds://wsdl", cache=None, documentStore=store,
+    client = asyncsuds.client.Client("suds://wsdl", cache=None, documentStore=store,
         nosend=True, prettyxml=True)
     _assert_request_content(client.service.f(local="--L--",
         local_referenced="--LR--", external="--E--"), """\
@@ -796,7 +796,7 @@ def test_optional_parameter_handling():
 
 def test_SOAP_headers():
     """Rudimentary 'soapheaders' option usage test."""
-    wsdl = suds.byte_str("""\
+    wsdl = asyncsuds.byte_str("""\
 <?xml version="1.0" encoding="utf-8"?>
 <wsdl:definitions targetNamespace="my-target-namespace"
     xmlns:tns="my-target-namespace"

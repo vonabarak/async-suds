@@ -24,9 +24,9 @@ if __name__ == "__main__":
     import testutils
     testutils.run_using_pytest(globals())
 
-import suds
-import suds.sax.document
-import suds.sax.parser
+import asyncsuds
+import asyncsuds.sax.document
+import asyncsuds.sax.parser
 from testutils.assertion import assert_no_output
 from testutils.compare_sax import CompareSAX
 
@@ -60,8 +60,8 @@ class TestMatched:
 
     @skip_test_if_CompareSAX_assertions_disabled
     def test_empty_document(self, capsys):
-        a = suds.sax.document.Document()
-        b = suds.sax.document.Document()
+        a = asyncsuds.sax.document.Document()
+        b = asyncsuds.sax.document.Document()
         CompareSAX.document2document(a, b)
         assert_no_output(capsys)
 
@@ -85,8 +85,8 @@ class TestMatched:
         assert_no_output(capsys)
 
     @skip_test_if_CompareSAX_assertions_disabled
-    @pytest.mark.parametrize("type1", (suds.byte_str, text_type))
-    @pytest.mark.parametrize("type2", (suds.byte_str, text_type))
+    @pytest.mark.parametrize("type1", (asyncsuds.byte_str, text_type))
+    @pytest.mark.parametrize("type2", (asyncsuds.byte_str, text_type))
     def test_string_input_types(self, type1, type2, capsys):
         xml = "<a/>"
         CompareSAX.data2data(type1(xml), type2(xml))
@@ -158,45 +158,45 @@ class TestMismatched:
 
     @skip_test_if_CompareSAX_assertions_disabled
     def test_document2document_context(self, capsys):
-        a = suds.sax.document.Document()
-        b = suds.sax.parser.Parser().parse(string=suds.byte_str("<a/>"))
+        a = asyncsuds.sax.document.Document()
+        b = asyncsuds.sax.parser.Parser().parse(string=asyncsuds.byte_str("<a/>"))
         pytest.raises(AssertionError, CompareSAX.document2document, a, b)
         _assert_context_output(capsys, "document2document")
 
     @skip_test_if_CompareSAX_assertions_disabled
     def test_document2element_context(self, capsys):
-        a = suds.sax.parser.Parser().parse(string=suds.byte_str("<xx>1</xx>"))
-        b = suds.sax.parser.Parser().parse(string=suds.byte_str("<xx>2</xx>"))
+        a = asyncsuds.sax.parser.Parser().parse(string=asyncsuds.byte_str("<xx>1</xx>"))
+        b = asyncsuds.sax.parser.Parser().parse(string=asyncsuds.byte_str("<xx>2</xx>"))
         pytest.raises(AssertionError, CompareSAX.document2element, a, b.root())
         _assert_context_output(capsys, "document2element.<xx>.text")
 
     @skip_test_if_CompareSAX_assertions_disabled
     def test_element2element_context(self, capsys):
-        Parser = suds.sax.parser.Parser
-        e1 = Parser().parse(string=suds.byte_str("<x/>")).root()
-        e2 = Parser().parse(string=suds.byte_str("<y/>")).root()
+        Parser = asyncsuds.sax.parser.Parser
+        e1 = Parser().parse(string=asyncsuds.byte_str("<x/>")).root()
+        e2 = Parser().parse(string=asyncsuds.byte_str("<y/>")).root()
         pytest.raises(AssertionError, CompareSAX.element2element, e1, e2)
         _assert_context_output(capsys, "element2element.<x/y>")
 
     @skip_test_if_CompareSAX_assertions_disabled
     def test_element2element_context_invalid_name__left(self, capsys):
-        Parser = suds.sax.parser.Parser
-        e = Parser().parse(string=suds.byte_str("<x/>")).root()
+        Parser = asyncsuds.sax.parser.Parser
+        e = Parser().parse(string=asyncsuds.byte_str("<x/>")).root()
         e_invalid = object()
         pytest.raises(AssertionError, CompareSAX.element2element, e_invalid, e)
         _assert_context_output(capsys, "element2element.<???/x>")
 
     @skip_test_if_CompareSAX_assertions_disabled
     def test_element2element_context_invalid_name__right(self, capsys):
-        Parser = suds.sax.parser.Parser
-        e = Parser().parse(string=suds.byte_str("<y/>")).root()
+        Parser = asyncsuds.sax.parser.Parser
+        e = Parser().parse(string=asyncsuds.byte_str("<y/>")).root()
         e_invalid = object()
         pytest.raises(AssertionError, CompareSAX.element2element, e, e_invalid)
         _assert_context_output(capsys, "element2element.<y/???>")
 
     @skip_test_if_CompareSAX_assertions_disabled
     def test_empty_vs_non_empty_document(self, capsys):
-        document = suds.sax.document.Document()
+        document = asyncsuds.sax.document.Document()
         data = "<a/>"
         pytest.raises(AssertionError, CompareSAX.document2data, document, data)
         _assert_context_output(capsys, "document2data")

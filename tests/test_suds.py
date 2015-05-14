@@ -29,7 +29,7 @@ import testutils
 if __name__ == "__main__":
     testutils.run_using_pytest(globals())
 
-import suds
+import asyncsuds
 from testutils.compare_sax import CompareSAX
 
 import pytest
@@ -89,13 +89,13 @@ def test_choice_parameter_implementation_inconsistencies():
 
 
 def test_converting_client_to_string_must_not_raise_an_exception():
-    client = testutils.client_from_wsdl(suds.byte_str(
+    client = testutils.client_from_wsdl(asyncsuds.byte_str(
         "<?xml version='1.0' encoding='UTF-8'?><root/>"))
     str(client)
 
 
 def test_converting_metadata_to_string():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -142,7 +142,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_empty_invalid_WSDL(monkeypatch):
-    wsdl = suds.byte_str("")
+    wsdl = asyncsuds.byte_str("")
     monkeypatch.delitem(locals(), "e", False)
     e = pytest.raises(xml.sax.SAXParseException, testutils.client_from_wsdl,
         wsdl)
@@ -153,14 +153,14 @@ def test_empty_invalid_WSDL(monkeypatch):
 
 
 def test_empty_valid_WSDL():
-    client = testutils.client_from_wsdl(suds.byte_str(
+    client = testutils.client_from_wsdl(asyncsuds.byte_str(
         "<?xml version='1.0' encoding='UTF-8'?><root/>"))
     assert not client.wsdl.services, "No service definitions must be read "  \
         "from an empty WSDL."
 
 
 def test_enumeration_type_string_should_contain_its_value():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -198,9 +198,9 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     #   eX - enumeration element.
     #   aX - ancestry for the enumeration element.
     (e1, a1), (e2, a2), (e3, a3) = enumeration_data
-    assert isinstance(e1, suds.xsd.sxbasic.Enumeration)
-    assert isinstance(e2, suds.xsd.sxbasic.Enumeration)
-    assert isinstance(e3, suds.xsd.sxbasic.Enumeration)
+    assert isinstance(e1, asyncsuds.xsd.sxbasic.Enumeration)
+    assert isinstance(e2, asyncsuds.xsd.sxbasic.Enumeration)
+    assert isinstance(e3, asyncsuds.xsd.sxbasic.Enumeration)
     assert e1.name == "One"
     assert e2.name == "Two"
     assert e3.name == "Thirty-Two"
@@ -214,7 +214,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_function_parameters_global_sequence_in_a_sequence():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -275,13 +275,13 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(service.params) == 3
     assert service.params[0][0].name == "x1"
     assert service.params[0][0].type == _string_type
-    assert isinstance(service.params[0][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[0][1], asyncsuds.xsd.sxbuiltin.XString)
     assert service.params[1][0].name == "x2"
     assert service.params[1][0].type == ("UngaBunga", "my-namespace")
-    assert isinstance(service.params[1][1], suds.xsd.sxbasic.Complex)
+    assert isinstance(service.params[1][1], asyncsuds.xsd.sxbasic.Complex)
     assert service.params[2][0].name == "x3"
     assert service.params[2][0].type == _string_type
-    assert isinstance(service.params[2][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[2][1], asyncsuds.xsd.sxbuiltin.XString)
 
     # Method parameters as read from a method object.
     assert len(service.ports) == 1
@@ -299,7 +299,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_function_parameters_local_choice():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -352,10 +352,10 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(service.params) == 2
     assert service.params[0][0].name == "u1"
     assert service.params[0][0].type == _string_type
-    assert isinstance(service.params[0][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[0][1], asyncsuds.xsd.sxbuiltin.XString)
     assert service.params[1][0].name == "u2"
     assert service.params[1][0].type == _string_type
-    assert isinstance(service.params[1][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[1][1], asyncsuds.xsd.sxbuiltin.XString)
 
     # Method parameters as read from a method object.
     assert len(service.ports) == 1
@@ -376,7 +376,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_function_parameters_local_choice_in_a_sequence():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -438,13 +438,13 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(service.params) == 3
     assert service.params[0][0].name == "x1"
     assert service.params[0][0].type == _string_type
-    assert isinstance(service.params[0][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[0][1], asyncsuds.xsd.sxbuiltin.XString)
     assert service.params[1][0].name == "x2"
     assert service.params[1][0].type is None
-    assert isinstance(service.params[1][1], suds.xsd.sxbasic.Element)
+    assert isinstance(service.params[1][1], asyncsuds.xsd.sxbasic.Element)
     assert service.params[2][0].name == "x3"
     assert service.params[2][0].type == _string_type
-    assert isinstance(service.params[2][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[2][1], asyncsuds.xsd.sxbuiltin.XString)
 
     # Method parameters as read from a method object.
     assert len(service.ports) == 1
@@ -476,7 +476,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_function_parameters_local_sequence_in_a_sequence():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -538,13 +538,13 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(service.params) == 3
     assert service.params[0][0].name == "x1"
     assert service.params[0][0].type == _string_type
-    assert isinstance(service.params[0][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[0][1], asyncsuds.xsd.sxbuiltin.XString)
     assert service.params[1][0].name == "x2"
     assert service.params[1][0].type is None
-    assert isinstance(service.params[1][1], suds.xsd.sxbasic.Element)
+    assert isinstance(service.params[1][1], asyncsuds.xsd.sxbasic.Element)
     assert service.params[2][0].name == "x3"
     assert service.params[2][0].type == _string_type
-    assert isinstance(service.params[2][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[2][1], asyncsuds.xsd.sxbuiltin.XString)
 
     # Method parameters as read from a method object.
     assert len(service.ports) == 1
@@ -580,7 +580,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_function_parameters_sequence_in_a_choice():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -669,7 +669,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_function_parameters_sequence_in_a_choice_in_a_sequence():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -756,7 +756,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_function_parameters_strings():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -810,13 +810,13 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(service.params) == 3
     assert service.params[0][0].name == "x1"
     assert service.params[0][0].type == _string_type
-    assert isinstance(service.params[0][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[0][1], asyncsuds.xsd.sxbuiltin.XString)
     assert service.params[1][0].name == "x2"
     assert service.params[1][0].type == _string_type
-    assert isinstance(service.params[1][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[1][1], asyncsuds.xsd.sxbuiltin.XString)
     assert service.params[2][0].name == "x3"
     assert service.params[2][0].type == _string_type
-    assert isinstance(service.params[2][1], suds.xsd.sxbuiltin.XString)
+    assert isinstance(service.params[2][1], asyncsuds.xsd.sxbuiltin.XString)
 
     # Method parameters as read from a method object.
     assert len(service.ports) == 1
@@ -834,7 +834,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_global_enumeration():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -878,7 +878,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
         assert typeTuple[0] is typeTuple[1]
 
     aType = service.types[0][0]
-    assert isinstance(aType, suds.xsd.sxbasic.Simple)
+    assert isinstance(aType, asyncsuds.xsd.sxbasic.Simple)
     assert aType.name == "AAA"
     assert aType.enum()
     assert aType.mixed()
@@ -887,7 +887,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert not aType.sequence()
 
     assert len(aType.rawchildren) == 1
-    assert isinstance(aType.rawchildren[0], suds.xsd.sxbasic.Restriction)
+    assert isinstance(aType.rawchildren[0], asyncsuds.xsd.sxbasic.Restriction)
     assert aType.rawchildren[0].ref == _string_type
 
     enum = client.factory.create("AAA")
@@ -897,7 +897,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_global_sequence_in_a_global_sequence():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -947,13 +947,13 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
         assert typeTuple[0] is typeTuple[1]
 
     type_in = service.types[0][0]
-    assert isinstance(type_in, suds.xsd.sxbasic.Complex)
+    assert isinstance(type_in, asyncsuds.xsd.sxbasic.Complex)
     assert type_in.name == "Oklahoma"
     assert not type_in.sequence()
     assert type_in.rawchildren[0].sequence()
 
     type_out = service.types[1][0]
-    assert isinstance(type_out, suds.xsd.sxbasic.Complex)
+    assert isinstance(type_out, asyncsuds.xsd.sxbasic.Complex)
     assert type_out.name == "Wackadoodle"
     assert not type_out.sequence()
     assert type_out.rawchildren[0].sequence()
@@ -983,7 +983,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_global_string_sequence():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1026,7 +1026,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
         assert typeTuple[0] is typeTuple[1]
 
     aType = service.types[0][0]
-    assert isinstance(aType, suds.xsd.sxbasic.Complex)
+    assert isinstance(aType, asyncsuds.xsd.sxbasic.Complex)
     assert aType.name == "Oklahoma"
     assert not aType.choice()
     assert not aType.enum()
@@ -1036,7 +1036,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
     assert len(aType.rawchildren) == 1
     sequence_node = aType.rawchildren[0]
-    assert isinstance(sequence_node, suds.xsd.sxbasic.Sequence)
+    assert isinstance(sequence_node, asyncsuds.xsd.sxbasic.Sequence)
     assert sequence_node.sequence()
     assert len(sequence_node) == 3
     sequence_items = sequence_node.children()
@@ -1065,7 +1065,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_local_sequence_in_a_global_sequence():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1116,7 +1116,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(service.types) == 1
 
     type_out = service.types[0][0]
-    assert isinstance(type_out, suds.xsd.sxbasic.Complex)
+    assert isinstance(type_out, asyncsuds.xsd.sxbasic.Complex)
     assert type_out.name == "Wackadoodle"
     assert not type_out.sequence()
     assert type_out.rawchildren[0].sequence()
@@ -1125,11 +1125,11 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert isinstance(children, list)
     assert len(children) == 2
     type_in1 = children[0][0]
-    assert isinstance(type_in1, suds.xsd.sxbasic.Element)
+    assert isinstance(type_in1, asyncsuds.xsd.sxbasic.Element)
     assert not type_in1.sequence()
     assert type_in1.rawchildren[0].rawchildren[0].sequence()
     type_in2 = children[1][0]
-    assert isinstance(type_in2, suds.xsd.sxbasic.Element)
+    assert isinstance(type_in2, asyncsuds.xsd.sxbasic.Element)
     assert not type_in2.sequence()
     assert type_in2.rawchildren[0].rawchildren[0].sequence()
     assert type_in1.rawchildren[0].name == "Oklahoma"
@@ -1156,7 +1156,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_no_trailing_comma_in_function_prototype_description_string__0():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1203,7 +1203,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_no_trailing_comma_in_function_prototype_description_string__1():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1252,7 +1252,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_no_trailing_comma_in_function_prototype_description_string__3():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1303,7 +1303,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_no_types():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1335,14 +1335,14 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert not client.wsdl.schema.types
     assert not service.types
 
-    pytest.raises(suds.TypeNotFound, client.factory.create, "NonExistingType")
+    pytest.raises(asyncsuds.TypeNotFound, client.factory.create, "NonExistingType")
 
 
 def test_parameter_referencing_missing_element(monkeypatch):
     wsdl = testutils.wsdl("", input="missingElement",
         xsd_target_namespace="aaa")
     monkeypatch.delitem(locals(), "e", False)
-    e = pytest.raises(suds.TypeNotFound, testutils.client_from_wsdl, wsdl)
+    e = pytest.raises(asyncsuds.TypeNotFound, testutils.client_from_wsdl, wsdl)
     try:
         assert str(e.value) == "Type not found: '(missingElement, aaa, )'"
     finally:
@@ -1427,7 +1427,7 @@ def test_restrictions():
 
 
 def test_schema_node_occurrences():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1516,7 +1516,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_schema_node_resolve():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1588,16 +1588,16 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert elemento_x3.resolve() is elemento_x3
 
     # Resolving builtin type nodes.
-    assert typo_u1.resolve().__class__ is suds.xsd.sxbuiltin.XString
+    assert typo_u1.resolve().__class__ is asyncsuds.xsd.sxbuiltin.XString
     assert typo_u1.resolve(nobuiltin=False).__class__ is  \
-        suds.xsd.sxbuiltin.XString
+        asyncsuds.xsd.sxbuiltin.XString
     assert typo_u1.resolve(nobuiltin=True) is typo_u1
     assert elemento_x2.resolve(nobuiltin=True) is typo
     assert elemento_x3.resolve(nobuiltin=True) is elemento_x3
 
 
 def test_schema_node_resolve__nobuiltin_caching():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1629,23 +1629,23 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     # does not cache an incorrect value, thus causing the second call to return
     # an incorrect result.
 
-    assert e1.resolve().__class__ is suds.xsd.sxbuiltin.XString
-    assert e1.resolve().__class__ is suds.xsd.sxbuiltin.XString
+    assert e1.resolve().__class__ is asyncsuds.xsd.sxbuiltin.XString
+    assert e1.resolve().__class__ is asyncsuds.xsd.sxbuiltin.XString
 
     assert e2.resolve(nobuiltin=True) is e2
     assert e2.resolve(nobuiltin=True) is e2
 
-    assert e3.resolve().__class__ is suds.xsd.sxbuiltin.XString
+    assert e3.resolve().__class__ is asyncsuds.xsd.sxbuiltin.XString
     assert e3.resolve(nobuiltin=True) is e3
     assert e3.resolve(nobuiltin=True) is e3
 
     assert e4.resolve(nobuiltin=True) is e4
-    assert e4.resolve().__class__ is suds.xsd.sxbuiltin.XString
-    assert e4.resolve().__class__ is suds.xsd.sxbuiltin.XString
+    assert e4.resolve().__class__ is asyncsuds.xsd.sxbuiltin.XString
+    assert e4.resolve().__class__ is asyncsuds.xsd.sxbuiltin.XString
 
 
 def test_schema_node_resolve__invalid_type():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1668,13 +1668,13 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     elemento1 = schema.elements["Elemento1", "my-namespace"]
     elemento2 = schema.elements["Elemento2", "my-namespace"]
     elemento3 = schema.elements["Elemento3", "my-namespace"]
-    pytest.raises(suds.TypeNotFound, elemento1.resolve)
-    pytest.raises(suds.TypeNotFound, elemento2.resolve)
-    pytest.raises(suds.TypeNotFound, elemento3.resolve)
+    pytest.raises(asyncsuds.TypeNotFound, elemento1.resolve)
+    pytest.raises(asyncsuds.TypeNotFound, elemento2.resolve)
+    pytest.raises(asyncsuds.TypeNotFound, elemento3.resolve)
 
 
 def test_schema_node_resolve__references():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1751,7 +1751,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_schema_object_child_access_by_index():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1788,7 +1788,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     service = client.sd[0]
     a_type = service.types[0][0]
     sequence = a_type.rawchildren[0]
-    assert isinstance(sequence, suds.xsd.sxbasic.Sequence)
+    assert isinstance(sequence, asyncsuds.xsd.sxbasic.Sequence)
     children = a_type.children()
     assert isinstance(children, list)
 
@@ -1820,7 +1820,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
 
 def test_simple_wsdl():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -1885,8 +1885,8 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(client.wsdl.schema.elements) == 2
     element_in = client.wsdl.schema.elements["f", "my-namespace"]
     element_out = client.wsdl.schema.elements["fResponse", "my-namespace"]
-    assert isinstance(element_in, suds.xsd.sxbasic.Element)
-    assert isinstance(element_out, suds.xsd.sxbasic.Element)
+    assert isinstance(element_in, asyncsuds.xsd.sxbasic.Element)
+    assert isinstance(element_out, asyncsuds.xsd.sxbasic.Element)
     assert element_in.name == "f"
     assert element_out.name == "fResponse"
     assert len(element_in.children()) == 2
@@ -1928,7 +1928,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert len(client.wsdl.bindings) == 1
     binding_qname, binding = _first_from_dict(client.wsdl.bindings)
     assert binding_qname == ("dummy", "my-namespace")
-    assert binding.__class__ is suds.wsdl.Binding
+    assert binding.__class__ is asyncsuds.wsdl.Binding
     assert len(binding.operations) == 1
     operation = next(itervalues(binding.operations))
     input = operation.soap.input.body
@@ -1951,23 +1951,23 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     assert param_name == "a"
     assert param_element is param_in_1
     assert len(param_ancestry) == 3
-    assert type(param_ancestry[0]) is suds.xsd.sxbasic.Element
+    assert type(param_ancestry[0]) is asyncsuds.xsd.sxbasic.Element
     assert param_ancestry[0].name == "f"
-    assert type(param_ancestry[1]) is suds.xsd.sxbasic.Complex
-    assert type(param_ancestry[2]) is suds.xsd.sxbasic.Sequence
+    assert type(param_ancestry[1]) is asyncsuds.xsd.sxbasic.Complex
+    assert type(param_ancestry[2]) is asyncsuds.xsd.sxbasic.Sequence
 
     param_name, param_element, param_ancestry = method_params[1]
     assert param_name == "b"
     assert param_element is param_in_2
     assert len(param_ancestry) == 3
-    assert type(param_ancestry[0]) is suds.xsd.sxbasic.Element
+    assert type(param_ancestry[0]) is asyncsuds.xsd.sxbasic.Element
     assert param_ancestry[0].name == "f"
-    assert type(param_ancestry[1]) is suds.xsd.sxbasic.Complex
-    assert type(param_ancestry[2]) is suds.xsd.sxbasic.Sequence
+    assert type(param_ancestry[1]) is asyncsuds.xsd.sxbasic.Complex
+    assert type(param_ancestry[2]) is asyncsuds.xsd.sxbasic.Sequence
 
 
 def test_wsdl_schema_content():
-    client = testutils.client_from_wsdl(suds.byte_str("""\
+    client = testutils.client_from_wsdl(asyncsuds.byte_str("""\
 <?xml version='1.0' encoding='UTF-8'?>
 <wsdl:definitions targetNamespace="my-namespace"
 xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -2014,7 +2014,7 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     # Elements.
     assert len(client.wsdl.schema.elements) == 1
     elemento = client.wsdl.schema.elements["Elemento", "my-namespace"]
-    assert isinstance(elemento, suds.xsd.sxbasic.Element)
+    assert isinstance(elemento, asyncsuds.xsd.sxbasic.Element)
 
     pytest.raises(KeyError, client.wsdl.schema.elements.__getitem__,
         ("DoesNotExist", "OMG"))
@@ -2022,23 +2022,23 @@ xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
     # Types.
     assert len(client.wsdl.schema.types) == 2
     unga_bunga = client.wsdl.schema.types["UngaBunga", "my-namespace"]
-    assert isinstance(unga_bunga, suds.xsd.sxbasic.Complex)
+    assert isinstance(unga_bunga, asyncsuds.xsd.sxbasic.Complex)
     fifi = client.wsdl.schema.types["Fifi", "my-namespace"]
-    assert isinstance(unga_bunga, suds.xsd.sxbasic.Complex)
+    assert isinstance(unga_bunga, asyncsuds.xsd.sxbasic.Complex)
 
     pytest.raises(KeyError, client.wsdl.schema.types.__getitem__,
         ("DoesNotExist", "OMG"))
 
 
 def _assert_dynamic_type(anObject, typename):
-    assert anObject.__module__ == suds.sudsobject.__name__
+    assert anObject.__module__ == asyncsuds.sudsobject.__name__
     assert anObject.__metadata__.sxtype.name == typename
     # In order to be compatible with old style classes (py2 only) we need to
     # access the object's class information using its __class__ member and not
     # the type() function. type() function always returns <type 'instance'> for
     # old-style class instances while the __class__ member returns the correct
     # class information for both old and new-style classes.
-    assert anObject.__class__.__module__ == suds.sudsobject.__name__
+    assert anObject.__class__.__module__ == asyncsuds.sudsobject.__name__
     assert anObject.__class__.__name__ == typename
 
 

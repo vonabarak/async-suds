@@ -40,39 +40,17 @@ setuptools available provides us with the following benefits:
 """
 
 import sys
-if sys.version_info < (2, 4):
-    print("ERROR: Python 2.4+ required")
+if sys.version_info < (3, 3):
+    print("ERROR: Python 3.3+ required")
     sys.exit(-2)
-if (3,) <= sys.version_info < (3, 1):
-    print("ERROR: Python 3.0 not supported - please use Python 3.1+ instead")
-    sys.exit(-2)
+
 
 import os
 import os.path
 import re
 
-# Workaround for a Python issue detected with Python 3.1.3 when running our
-# pytest based 'setup.py test' command. At the end of the test run, Python
-# would report an error:
-#
-#   > Error in atexit._run_exitfuncs:
-#   > TypeError: print_exception(): Exception expected for value, str found
-#
-# Workaround found suggested by Richard Oudkerk in Python's issue tracker at:
-#   http://bugs.python.org/issue15881#msg170215
-#
-# The error is caused by two chained Python bugs:
-#  1. The multiprocessing module seems to call its global cleanup function only
-#     after all of its globals have already been released, thus raising an
-#     exception.
-#  2. atexit exception handling implementation is not prepared to handle and
-#     correctly report the exception as raised by the multiprocessing module
-#     cleanup.
-if (3,) <= sys.version_info < (3, 2):
-    import multiprocessing
-    del multiprocessing
 
-
+__version__ = 1
 # -----------------------------------------------------------------------------
 # Global variables.
 # -----------------------------------------------------------------------------
@@ -119,11 +97,8 @@ if script_folder != current_folder:
 
 tools_folder = os.path.join(script_folder, "tools")
 sys.path.insert(0, tools_folder)
-import suds_devel
 sys.path.pop(0)
 
-from suds_devel.requirements import (check_Python24_pytest_requirements,
-    pytest_requirements, six_requirements)
 
 
 # -----------------------------------------------------------------------------
@@ -252,47 +227,6 @@ def acquire_setuptools_setup():
     setup = import_setuptools_setup()
     if setup or not attempt_to_install_setuptools:
         return setup
-    if (3,) <= sys.version_info[:2] < (3, 2):
-        # Setuptools contains a test module with an explicitly specified UTF-8
-        # BOM, which is not supported by Python's py2to3 tool prior to Python
-        # 3.2 (see Python issue #7313). Setuptools can still be installed
-        # manually using its ez_setup.py installer script (it will report and
-        # ignore the error), but if we use the ez_setup.use_setuptools()
-        # programmatic setup invocation from here - it will fail.
-        #
-        # There are several things that could be done here - patches welcome if
-        # anyone actually needs them:
-        #  - the issue could be worked around by running the setuptools
-        #    installation as a separate process in this case
-        #  - warning display could be more cleanly integrated into distutils
-        #    command execution process so the warning does not get displayed
-        #    if setuptools would not actually be useful, e.g. if user just ran
-        #    our setup script with no command or with the --help option
-        print("---")
-        print("WARNING: can not install setuptools automatically using Python "
-            "3.0 & 3.1")
-        print("WARNING: if needed, install setuptools manually before running "
-            "this installation using Python prior to version 3.2")
-        print("---")
-        return
-    import suds_devel.ez_setup_versioned
-    ez_setup = suds_devel.ez_setup_versioned.import_module()
-    try:
-        # Since we know there is no setuptools package in the current
-        # environment, this will:
-        # 1. download a setuptools source distribution to the current folder
-        # 2. prepare an installable setuptools egg distribution in the current
-        #    folder
-        # 3. schedule for the prepared setuptools distribution to be installed
-        #    together with our package (if our package is getting installed at
-        #    all and setup has not been called for some other purpose, e.g.
-        #    displaying its help information or running a non-install related
-        #    setup command)
-        ez_setup.use_setuptools()
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except Exception:
-        return
     return import_setuptools_setup()
 
 setup = acquire_setuptools_setup()
@@ -433,45 +367,6 @@ def test_requirements():
 
     include_pytest_requirements = True
 
-    if sys.version_info < (2, 5):
-        # pytest requirements can not be installed automatically by this setup
-        # script under Python 2.4.x environment. Specific pytest & py library
-        # package version combination that we found working in Python 2.4.x
-        # environments does not formally satisfy pytest requirements, and we
-        # found no way to make setuptools' test command succeed when this
-        # script installs packages that do not have all their formal
-        # requirements satisfied.
-        have_pytest, have_py = check_Python24_pytest_requirements()
-        if not have_pytest:
-            return "compatible preinstalled pytest needed prior to Python 2.5"
-        if not have_py:
-            return "compatible preinstalled py needed prior to Python 2.5"
-
-        # We must not explicitly specify pytest requirements when running the
-        # tests using a Python 2.4.x environment as the only way we found we
-        # can run our tests there is to use formally incompatible pytest & py
-        # packages. Explicitly specifying pytest requirements here would then
-        # cause setuptols to verify those requirements prior to running our
-        # test suite.
-        include_pytest_requirements = False
-
-    if ((3,) <= sys.version_info < (3, 2, 3)):
-        # Python 3.x versions prior to Python 3.2.3 have a bug in their inspect
-        # module causing inspect.getmodule() calls to fail if some module lazy
-        # loads other modules when some of its attributes are accessed. For
-        # more detailed information see Python development issue #13487
-        # (http://bugs.python.org/issue13487).
-        #
-        # This occurs when using setuptools to install our project into a
-        # Python 3.1 environment. There the py.error module seems to do such
-        # lazy loading. Forcing that module to be loaded here, before the
-        # setuptools installation procedure, avoids the issue.
-        try:
-            import py.error
-            py.error.__attribute_access_to_force_this_module_to_lazy_load__
-        except (AttributeError, ImportError):
-            pass
-
     # When using Python 2.5 on Windows, if setuptools chooses to install the
     # colorama package (pytest requirement on Windows) older than version
     # 0.1.11, running our 'setup.py test' command may show benign error
@@ -481,9 +376,6 @@ def test_requirements():
     # test' command that is installing it. The issue has been fixed by the next
     # Python 2.5 compatible colorama 0.3.2 release.
     result = []
-    if include_pytest_requirements:
-        result.extend(pytest_requirements())
-    result.extend(six_requirements())
     return result
 
 test_error = None
@@ -569,9 +461,8 @@ distutils_cmdclass["test"] = TestCommand
 # Mark the original suds project as obsolete.
 # -----------------------------------------------------------------------------
 
-if sys.version_info >= (2, 5):
-    # distutils.setup() 'obsoletes' parameter not introduced until Python 2.5.
-    extra_setup_params["obsoletes"] = ["suds"]
+# distutils.setup() 'obsoletes' parameter not introduced until Python 2.5.
+extra_setup_params["obsoletes"] = ["suds"]
 
 
 # -----------------------------------------------------------------------------
@@ -624,39 +515,11 @@ except EnvironmentError:
     # gave it our best. Continue on with possible spurious warnings.
     pass
 
-
-# -----------------------------------------------------------------------------
-# Set up project metadata and run the actual setup.
-# -----------------------------------------------------------------------------
-# Package meta-data needs may be specified as:
-#  * Python 2.x - UTF-8 encoded bytes
-#  * Python [2.6, 3.0> - unicode string
-#      - unicode strings containing non-ASCII characters supported since Python
-#        commit 4c683ec4415b3c4bfbc7fe7a836b949cb7beea03
-#  * Python [3.0, 3.2.2>
-#      - may only contain ASCII characters due to a distutils bug (given input
-#        can only be a unicode string and is encoded using the user's default
-#        system code-page, e.g. typically CP1250 on eastern European Windows,
-#        CP1252 on western European Windows, UTF-8 on Linux or any other)
-#      - setuptools 3.5 works around the issue by overriding relevant distutils
-#        functionality, allowing the use of non-ASCII characters, but only for
-#        Python 3.1
-#  * Python 3.2.2+ - unicode string
-#      - unicode strings containing non-ASCII characters supported since Python
-#        commit fb4d2e6d393e96baac13c4efc216e361bf12c293
-
-can_not_use_non_ASCII_meta_data = (3,) <= sys.version_info < (3, 2, 2)
-if (can_not_use_non_ASCII_meta_data and using_setuptools and
-        sys.version_info[:2] == (3, 1)):
-    from setuptools import __version__ as setuptools_version
-    from pkg_resources import parse_version as pv
-    can_not_use_non_ASCII_meta_data = pv(setuptools_version) < pv("3.5")
-
 # Wrap long_description at 72 characters since the PKG-INFO package
 # distribution metadata file stores this text with an 8 space indentation.
 long_description = """
 ---------------------------------------
-Lightweight SOAP client (Jurko's fork).
+Lightweight SOAP client (Kamyar's fork).
 ---------------------------------------
 
   Based on the original 'suds' project by Jeff Ortel (jortel at redhat
@@ -673,21 +536,19 @@ if it ever gets revived again.
 
 """
 
-package_name = "suds-jurko"
+package_name = "async-suds"
 version_tag = safe_version(__version__)
-project_url = "http://bitbucket.org/jurko/suds"
+project_url = "http://bitbucket.org/kamyar1979/async-suds"
 base_download_url = project_url + "/downloads"
 download_distribution_name = "%s-%s.tar.bz2" % (package_name, version_tag)
 download_url = "%s/%s" % (base_download_url, download_distribution_name)
 
-maintainer="Jurko Gospodnetić"
-if can_not_use_non_ASCII_meta_data:
-    maintainer = unicode2ascii(maintainer)
+maintainer="Kamyar Inanloo"
 
 setup(
     name=package_name,
     version=__version__,
-    description="Lightweight SOAP client (Jurko's fork)",
+    description="Lightweight async SOAP client (Kamyar's fork)",
     long_description=long_description,
     keywords=["SOAP", "web", "service", "client"],
     url=project_url,
@@ -697,7 +558,7 @@ setup(
     author="Jeff Ortel",
     author_email="jortel@redhat.com",
     maintainer=maintainer,
-    maintainer_email="jurko.gospodnetic@pke.hr",
+    maintainer_email="kamyar1979@gmail.com",
 
     # See PEP-301 for the classifier specification. For a complete list of
     # available classifiers see
@@ -709,14 +570,6 @@ setup(
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.4",
-        "Programming Language :: Python :: 2.5",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.1",
-        "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
         "Topic :: Internet"],

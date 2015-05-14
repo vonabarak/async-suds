@@ -27,9 +27,9 @@ disabled.
 
 """
 
-import suds.sax.document
-import suds.sax.element
-import suds.sax.parser
+import asyncsuds.sax.document
+import asyncsuds.sax.element
+import asyncsuds.sax.parser
 
 from six import text_type, u
 
@@ -109,8 +109,8 @@ class CompareSAX:
         self = cls()
         self.__push_context("document2element")
         try:
-            assert document.__class__ is suds.sax.document.Document
-            assert element.__class__ is suds.sax.element.Element
+            assert document.__class__ is asyncsuds.sax.document.Document
+            assert element.__class__ is asyncsuds.sax.element.Element
             assert len(document.getChildren()) == 1
             self.__element2element(document.getChildren()[0], element)
         except Exception:
@@ -218,8 +218,8 @@ class CompareSAX:
 
         """
         self.__push_context(context)
-        assert lhs.__class__ is suds.sax.document.Document
-        assert rhs.__class__ is suds.sax.document.Document
+        assert lhs.__class__ is asyncsuds.sax.document.Document
+        assert rhs.__class__ is asyncsuds.sax.document.Document
         self.__compare_child_elements(lhs, rhs)
         self.__pop_context()
 
@@ -247,8 +247,8 @@ class CompareSAX:
         """
         context = self.__element2element_context(lhs, rhs, context_info)
         self.__push_context(context)
-        assert lhs.__class__ is suds.sax.element.Element
-        assert rhs.__class__ is suds.sax.element.Element
+        assert lhs.__class__ is asyncsuds.sax.element.Element
+        assert rhs.__class__ is asyncsuds.sax.element.Element
         assert lhs.name == rhs.name
         self.__compare_element_namespace(lhs, rhs)
         self.__compare_element_text(lhs, rhs)
@@ -284,7 +284,7 @@ class CompareSAX:
         """
         if isinstance(data, text_type):
             data = data.encode("utf-8")
-        return suds.sax.parser.Parser().parse(string=data)
+        return asyncsuds.sax.parser.Parser().parse(string=data)
 
     def __pop_context(self):
         self.__context.pop()

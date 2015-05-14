@@ -26,9 +26,9 @@ if __name__ == "__main__":
     import testutils
     testutils.run_using_pytest(globals())
 
-import suds
-from suds.sax.document import Document
-import suds.sax.parser
+import asyncsuds
+from asyncsuds.sax.document import Document
+import asyncsuds.sax.parser
 
 import pytest
 import six
@@ -41,7 +41,7 @@ class TestStringRepresentation:
 
     @staticmethod
     def create_test_document():
-        input_data = suds.byte_str("""\
+        input_data = asyncsuds.byte_str("""\
 <xsd:element name="ZuZu">
    <xsd:simpleType>
       <xsd:restriction base="xsd:string">
@@ -51,14 +51,14 @@ class TestStringRepresentation:
       </xsd:restriction>
    </xsd:simpleType>
 </xsd:element>""")
-        document = suds.sax.parser.Parser().parse(suds.BytesIO(input_data))
+        document = asyncsuds.sax.parser.Parser().parse(asyncsuds.BytesIO(input_data))
         assert document.__class__ is Document
         return document
 
     @pytest.mark.skipif(sys.version_info >= (3,), reason="Python 2 specific")
     def test_convert_to_byte_str(self):
         document = self.create_test_document()
-        expected = suds.byte_str(document.str())
+        expected = asyncsuds.byte_str(document.str())
         assert str(document) == expected
 
     def test_convert_to_unicode(self):
