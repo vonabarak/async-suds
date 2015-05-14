@@ -23,8 +23,6 @@ from asyncsuds.transport import *
 
 import base64
 from http.cookiejar import CookieJar
-import http.client
-import socket
 import sys
 import asyncio
 from aiohttp.client import request as async_request

@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
 import asyncsuds
 import asyncsuds.transport
-import asyncsuds.transport.http
+import asyncsuds.transport.http_transport
 
 import pytest
 from six import u
@@ -154,7 +154,7 @@ class SendMethodFixture:
         self.name = name
 
     def __call__(self, transport, *args, **kwargs):
-        assert isinstance(transport, asyncsuds.transport.http.HttpTransport)
+        assert isinstance(transport, asyncsuds.transport.http_transport.HttpTransport)
         return getattr(transport, self.name)(*args, **kwargs)
 
 
@@ -170,7 +170,7 @@ test_URL_data = (
 
 def assert_default_transport(transport):
     """Test utility verifying default constructed transport content."""
-    assert isinstance(transport, asyncsuds.transport.http.HttpTransport)
+    assert isinstance(transport, asyncsuds.transport.http_transport.HttpTransport)
     assert transport.urlopener is None
 
 
@@ -220,7 +220,7 @@ def test_authenticated_http_add_credentials_to_request(input):
 
     username = input.get("username", None)
     password = input.get("password", None)
-    t = asyncsuds.transport.http.HttpAuthenticated(**input)
+    t = asyncsuds.transport.http_transport.HttpAuthenticated(**input)
     r = MockRequest()
     t.addcredentials(r)
     assert_Authorization_header(r, username, password)
@@ -233,13 +233,13 @@ def test_authenticated_http_add_credentials_to_request(input):
 def test_construct_authenticated_http(input):
     expected_username = input.get("username", None)
     expected_password = input.get("password", None)
-    transport = asyncsuds.transport.http.HttpAuthenticated(**input)
+    transport = asyncsuds.transport.http_transport.HttpAuthenticated(**input)
     assert transport.credentials() == (expected_username, expected_password)
     assert_default_transport(transport)
 
 
 def test_construct_http():
-    transport = asyncsuds.transport.http.HttpTransport()
+    transport = asyncsuds.transport.http_transport.HttpTransport()
     assert_default_transport(transport)
 
 
@@ -315,7 +315,7 @@ def test_sending_using_network_sockets(send_method, monkeypatch):
     monkeypatch.setattr("socket.getaddrinfo", mocker.getaddrinfo)
     monkeypatch.setattr("socket.socket", mocker.socket)
     request = asyncsuds.transport.Request(url, non_ascii_byte_data)
-    transport = asyncsuds.transport.http.HttpTransport()
+    transport = asyncsuds.transport.http_transport.HttpTransport()
     expected_sent_data_start, expected_request_data_send = {
         "open": ("GET", False),
         "send": ("POST", True)}[send_method.name]
@@ -371,7 +371,7 @@ class TestSendingToURLWithAMissingProtocolIdentifier:
     @pytest.mark.skipif(sys.version_info >= (3,), reason="Python 2 specific")
     @invalid_URL_parametrization
     def test_python2(self, url, send_method):
-        transport = asyncsuds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http_transport.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur(MyException)
         request = create_request(url)
         pytest.raises(MyException, send_method, transport, request)
@@ -380,7 +380,7 @@ class TestSendingToURLWithAMissingProtocolIdentifier:
     @invalid_URL_parametrization
     def test_python3(self, url, send_method, monkeypatch):
         monkeypatch.delitem(locals(), "e", False)
-        transport = asyncsuds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http_transport.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur()
         request = create_request(url)
         e = pytest.raises(ValueError, send_method, transport, request)
@@ -443,7 +443,7 @@ class TestURLOpenerUsage:
         monkeypatch.delattr(locals(), "e", False)
         fp = MockFP()
         e_original = self.create_HTTPError(code=status_code, fp=fp)
-        t = asyncsuds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http_transport.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e_original)
         request = create_request()
 
@@ -471,7 +471,7 @@ class TestURLOpenerUsage:
 
         """
         e = self.create_HTTPError(code=status_code)
-        transport = asyncsuds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http_transport.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur(open_exception=e)
         wsdl = testutils.wsdl('<xsd:element name="o" type="xsd:string"/>',
             output="o", operation_name="f")
@@ -499,7 +499,7 @@ class TestURLOpenerUsage:
         # exception by attempting to access a non-existing 'None.message'
         # attribute internally.
         e = self.create_HTTPError(code=status_code)
-        transport = asyncsuds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http_transport.HttpTransport()
         transport.urlopener = MockURLOpenerSaboteur(open_exception=e)
         wsdl = testutils.wsdl('<xsd:element name="o" type="xsd:string"/>',
             output="o", operation_name="f")
@@ -513,7 +513,7 @@ class TestURLOpenerUsage:
 
         """
         e = MyException()
-        t = asyncsuds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http_transport.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e)
         assert pytest.raises(e.__class__, t.open, create_request()).value is e
 
@@ -540,7 +540,7 @@ class TestURLOpenerUsage:
         msg = object()
         fp = MockFP()
         e_original = self.create_HTTPError(msg=msg, code=status_code, fp=fp)
-        t = asyncsuds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http_transport.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e_original)
         request = create_request()
 
@@ -567,7 +567,7 @@ class TestURLOpenerUsage:
 
         """
         e_original = self.create_HTTPError(code=status_code)
-        t = asyncsuds.transport.http.HttpTransport()
+        t = asyncsuds.transport.http_transport.HttpTransport()
         t.urlopener = MockURLOpenerSaboteur(open_exception=e_original)
         assert t.send(create_request()) is None
 
@@ -582,7 +582,7 @@ class TestURLOpenerUsage:
             assert handlers[0].__class__ is ProxyHandler
             raise MyException
         monkeypatch.setattr(urllib_request, "build_opener", my_build_urlopener)
-        transport = asyncsuds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http_transport.HttpTransport()
         request = create_request(url=url)
         pytest.raises(MyException, send_method, transport, request)
 
@@ -601,7 +601,7 @@ class TestURLOpenerUsage:
                 assert request.__class__ is urllib_request.Request
                 assert request.get_full_url() == url
                 raise MyException
-        transport = asyncsuds.transport.http.HttpTransport()
+        transport = asyncsuds.transport.http_transport.HttpTransport()
         transport.urlopener = MockURLOpener()
         def my_build_urlopener(*args, **kwargs):
             pytest.fail("urllib build_opener() called when not expected.")

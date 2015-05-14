@@ -19,7 +19,7 @@ Contains classes for authenticated HTTP transport implementations.
 """
 
 from asyncsuds.transport import *
-from asyncsuds.transport.http import HttpTransport
+from asyncsuds.transport.http_transport import HttpTransport
 
 import urllib.request
 import asyncio

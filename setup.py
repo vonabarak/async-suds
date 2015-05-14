@@ -45,12 +45,13 @@ if sys.version_info < (3, 3):
     sys.exit(-2)
 
 
+
 import os
 import os.path
 import re
+from asyncsuds.version import __version__
 
 
-__version__ = 1
 # -----------------------------------------------------------------------------
 # Global variables.
 # -----------------------------------------------------------------------------
@@ -324,7 +325,7 @@ def unicode2ascii(unicode):
 # function compile it to get a better error messages. If we used exec() on the
 # source code directly, the source file would have been listed as just
 # '<string>'.
-exec(read_python_code(os.path.join(script_folder, "suds", "version.py")))
+exec(read_python_code(os.path.join(script_folder, "asyncsuds", "version.py")))
 
 
 # -----------------------------------------------------------------------------
@@ -553,7 +554,7 @@ setup(
     keywords=["SOAP", "web", "service", "client"],
     url=project_url,
     download_url=download_url,
-    packages=recursive_package_list("suds"),
+    packages=recursive_package_list("asyncsuds"),
 
     author="Jeff Ortel",
     author_email="jortel@redhat.com",
