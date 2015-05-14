@@ -1,1 +1,0 @@
-Trying to patch suds-jurko to work with asyncio.

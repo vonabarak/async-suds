@@ -26,7 +26,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-class ServiceDefinition(UnicodeMixin):
+class ServiceDefinition(object):
     """
     A service definition provides an object used to generate a textual description
     of a service.
@@ -232,7 +232,7 @@ class ServiceDefinition(UnicodeMixin):
         s.append('\n\n')
         return ''.join(s)
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return self.description()
         except Exception as e:

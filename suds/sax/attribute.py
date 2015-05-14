@@ -23,7 +23,7 @@ from suds.sax import *
 from suds.sax.text import Text
 
 
-class Attribute(UnicodeMixin):
+class Attribute(object):
     """
     An XML attribute object.
     @ivar parent: The node containing this attribute
@@ -164,7 +164,7 @@ class Attribute(UnicodeMixin):
             'attr (prefix=%s, name=%s, value=(%s))' %\
                 (self.prefix, self.name, self.value)
 
-    def __unicode__(self):
+    def __str__(self):
         """ get an xml string representation """
         n = self.qname()
         if self.hasText():

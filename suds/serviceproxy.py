@@ -24,7 +24,7 @@ from suds import *
 from suds.client import Client
 
 
-class ServiceProxy(UnicodeMixin):
+class ServiceProxy(object):
 
     """
     A lightweight soap based web service proxy.
@@ -69,8 +69,8 @@ class ServiceProxy(UnicodeMixin):
         """
         return self.__client__.factory.create(name)
 
-    def __unicode__(self):
-        return unicode(self.__client__)
+    def __str__(self):
+        return str(self.__client__)
 
     def __getattr__(self, name):
         builtin = name.startswith('__') and name.endswith('__')

@@ -36,7 +36,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-class SchemaCollection(UnicodeMixin):
+class SchemaCollection(object):
     """
     A collection of schema objects.
 
@@ -157,14 +157,14 @@ class SchemaCollection(UnicodeMixin):
     def __len__(self):
         return len(self.children)
 
-    def __unicode__(self):
+    def __str__(self):
         result = ["\nschema collection"]
         for s in self.children:
             result.append(s.str(1))
         return "\n".join(result)
 
 
-class Schema(UnicodeMixin):
+class Schema(object):
     """
     The schema is an objectification of a <schema/> (XSD) definition. It
     provides inspection, lookup and type resolution.
@@ -427,5 +427,5 @@ class Schema(UnicodeMixin):
     def __repr__(self):
         return '<%s tns="%s"/>' % (self.id, self.tns[1])
 
-    def __unicode__(self):
+    def __str__(self):
         return self.str()

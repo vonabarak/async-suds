@@ -36,6 +36,7 @@ from suds.sax.text import Text
 import sys
 from xml.sax import make_parser, InputSource, ContentHandler
 from xml.sax.handler import feature_external_ges
+from io import StringIO
 
 
 class Handler(ContentHandler):
@@ -126,7 +127,7 @@ class Parser:
         source = file
         if file is None:
             source = InputSource(None)
-            source.setByteStream(suds.BytesIO(string))
+            source.setByteStream(StringIO(string))
         sax, handler = self.saxparser()
         sax.parse(source)
         timer.stop()

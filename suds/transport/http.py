@@ -65,7 +65,7 @@ class HttpTransport(Transport):
         res = yield from async_request('GET', request.url, headers=headers, cookies=dict(self.cookiejar))
         reply = yield from res.content.read()
         log.debug('received:\n%s', reply)
-        return reply
+        return str(reply, encoding='utf-8')
 
 
     @asyncio.coroutine
@@ -76,7 +76,7 @@ class HttpTransport(Transport):
         res = yield from async_request('POST', request.url, data=msg, headers=headers, cookies=dict(self.cookiejar))
         reply = yield from res.content.read()
         log.debug('received:\n%s', reply)
-        return reply
+        return str(reply, encoding='utf-8')
 
     def __deepcopy__(self):
         clone = self.__class__()

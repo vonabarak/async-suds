@@ -24,7 +24,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-class SchemaObject(UnicodeMixin):
+class SchemaObject(object):
     """
     A schema object is an extension to object with schema awareness.
 
@@ -520,9 +520,6 @@ class SchemaObject(UnicodeMixin):
         """
         return ()
 
-    def __unicode__(self):
-        return unicode(self.str())
-
     def __repr__(self):
         s = []
         s.append("<%s" % (self.id,))
@@ -584,7 +581,7 @@ class Iter:
             self.items = sx.rawchildren
             self.index = 0
 
-        def next(self):
+        def __next__(self):
             """
             Get the I{next} item in the frame's collection.
 
@@ -642,7 +639,7 @@ class Iter:
             return self.stack[-1]
         raise StopIteration()
 
-    def next(self):
+    def __next__(self):
         """
         Get the next item.
 
@@ -653,15 +650,15 @@ class Iter:
         """
         frame = self.top()
         while True:
-            result = frame.next()
+            result = frame.__next__()
             if result is None:
                 self.pop()
-                return self.next()
+                return self.__next__()
             if isinstance(result, Content):
                 ancestry = [f.sx for f in self.stack]
                 return result, ancestry
             self.push(result)
-            return self.next()
+            return self.__next__()
 
     def __iter__(self):
         return self

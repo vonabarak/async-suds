@@ -23,7 +23,7 @@ from suds.sax import *
 from suds.sax.element import Element
 
 
-class Document(UnicodeMixin):
+class Document(object):
     """ An XML Document """
 
     DECL = '<?xml version="1.0" encoding="UTF-8"?>'
@@ -172,5 +172,5 @@ class Document(UnicodeMixin):
             s.append(root.plain())
         return ''.join(s)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.str()

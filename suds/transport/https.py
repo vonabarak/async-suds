@@ -58,13 +58,11 @@ class HttpAuthenticated(HttpTransport):
         HttpTransport.__init__(self, **kwargs)
         self.pm = urllib.request.HTTPPasswordMgrWithDefaultRealm()
 
-    @asyncio.coroutine
     def open(self, request):
         self.add_credentials(request)
         return HttpTransport.open(self, request)
 
 
-    @asyncio.coroutine
     def send(self, request):
         self.add_credentials(request)
         return HttpTransport.send(self, request)

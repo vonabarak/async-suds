@@ -99,7 +99,7 @@ class DefinitionsReader(Reader):
         wsdl = cache.get(id)
         if wsdl is None:
             wsdl = self.fn(url, self.options)
-            print(wsdl)
+            yield from wsdl.connect()
             cache.put(id, wsdl)
         else:
             # Cached WSDL Definitions objects may have been created with

@@ -24,7 +24,7 @@ from suds.sax.text import Text
 from suds.sax.attribute import Attribute
 
 
-class Element(UnicodeMixin):
+class Element(object):
     """
     An XML element object.
 
@@ -675,7 +675,7 @@ class Element(UnicodeMixin):
             c.promotePrefixes()
         if self.parent is None:
             return
-        for p, u in self.nsprefixes.items():
+        for p, u in self.nsprefixes.copy().items():
             if p in self.parent.nsprefixes:
                 pu = self.parent.nsprefixes[p]
                 if pu == u:
@@ -806,7 +806,7 @@ class Element(UnicodeMixin):
         result.append("%s<%s" % (tab, self.qname()))
         result.append(self.nsdeclarations())
         for a in self.attributes:
-            result.append(" %s" % (unicode(a),))
+            result.append(" %s" % (str(a),))
         if self.isempty():
             result.append("/>")
             return "".join(result)
@@ -831,7 +831,7 @@ class Element(UnicodeMixin):
         """
         result = ["<%s" % (self.qname(),), self.nsdeclarations()]
         for a in self.attributes:
-            result.append(" %s" % (unicode(a),))
+            result.append(" %s" % (str(a),))
         if self.isempty():
             result.append("/>")
             return "".join(result)
@@ -965,13 +965,13 @@ class Element(UnicodeMixin):
         return len(self.children)
 
     def __getitem__(self, index):
-        if isinstance(index, basestring):
+        if isinstance(index, str):
             return self.get(index)
         if index < len(self.children):
             return self.children[index]
 
     def __setitem__(self, index, value):
-        if isinstance(index, basestring):
+        if isinstance(index, str):
             self.set(index, value)
         else:
             if index < len(self.children) and isinstance(value, Element):
@@ -984,7 +984,7 @@ class Element(UnicodeMixin):
     def __repr__(self):
         return "Element (prefix=%s, name=%s)" % (self.prefix, self.name)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.str()
 
     def __iter__(self):
@@ -1011,7 +1011,7 @@ class NodeIterator:
         self.pos = 0
         self.children = parent.children
 
-    def next(self):
+    def __next__(self):
         """
         Get the next child.
 

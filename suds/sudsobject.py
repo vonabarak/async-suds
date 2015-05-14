@@ -135,7 +135,7 @@ class Factory:
         return subclass(value)
 
 
-class Object(UnicodeMixin):
+class Object(object):
 
     def __init__(self):
         self.__keylist__ = []
@@ -178,7 +178,7 @@ class Object(UnicodeMixin):
     def __repr__(self):
         return str(self)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.__printer__.tostr(self)
 
 
@@ -189,7 +189,7 @@ class Iter:
         self.keylist = self.__keylist(sobject)
         self.index = 0
 
-    def next(self):
+    def __next__(self):
         keylist = self.keylist
         nkeys = len(self.keylist)
         while self.index < nkeys:

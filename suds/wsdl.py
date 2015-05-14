@@ -47,45 +47,42 @@ soap12ns = (None, "http://schemas.xmlsoap.org/wsdl/soap12/")
 
 class WObject(Object):
     """
-    Base object for WSDL types.
-
+    Base object for wsdl types.
     @ivar root: The XML I{root} element.
     @type root: L{Element}
-
     """
 
-    def __init__(self):
+    def __init__(self, root, definitions=None):
         """
         @param root: An XML root element.
         @type root: L{Element}
-
-        """
-        Object.__init__(self)
-
-    def parse(self, definitions):
-        """
-        Resolve named references to other WSDL objects.
-
         @param definitions: A definitions object.
         @type definitions: L{Definitions}
-
         """
+        Object.__init__(self)
+        self.root = root
         pmd = Metadata()
-        pmd.excludes = ["root"]
+        pmd.excludes = ['root']
         pmd.wrappers = dict(qname=repr)
         self.__metadata__.__print__ = pmd
+
+    def resolve(self, definitions):
+        """
+        Resolve named references to other WSDL objects.
+        @param definitions: A definitions object.
+        @type definitions: L{Definitions}
+        """
+        pass
 
 
 
 class NamedObject(WObject):
     """
     A B{named} WSDL object.
-
     @ivar name: The name of the object.
     @type name: str
     @ivar qname: The I{qualified} name of the object.
     @type qname: (name, I{namespace-uri}).
-
     """
 
     def __init__(self, root, definitions):
@@ -94,18 +91,12 @@ class NamedObject(WObject):
         @type root: L{Element}
         @param definitions: A definitions object.
         @type definitions: L{Definitions}
-
         """
-        WObject.__init__(self)
-        self.root = root
-
-    def parse(self, definitions):
-        super().parse(definitions)
-        self.name = self.root.get("name")
+        WObject.__init__(self, root, definitions)
+        self.name = root.get('name')
         self.qname = (self.name, definitions.tns[1])
         pmd = self.__metadata__.__print__
-        pmd.wrappers["qname"] = repr
-
+        pmd.wrappers['qname'] = repr
 
 
 class Definitions(WObject):
@@ -140,8 +131,8 @@ class Definitions(WObject):
     Tag = "definitions"
 
     def __init__(self, url, options):
-        super().__init__()
         log.debug("reading WSDL at: %s ...", url)
+        Object.__init__(self)
         self.url = url
         self.reader = DocumentReader(options)
         self.id = objid(self)
@@ -154,8 +145,6 @@ class Definitions(WObject):
         self.port_types = {}
         self.bindings = {}
         self.services = []
-
-
 
     def __call__(self):
         """
@@ -172,6 +161,7 @@ class Definitions(WObject):
     def connect(self):
         d = yield from self.reader.open(self.url)
         self.root = d.root()
+        WObject.__init__(self, self.root)
         self.tns = self.mktns(self.root)
         self.add_children(self.root)
         self.children.sort()
@@ -187,8 +177,6 @@ class Definitions(WObject):
         for s in self.services:
             self.add_methods(s)
         log.debug("WSDL at '%s' loaded:\n%s", self.url, self)
-
-
 
 
     def mktns(self, root):
@@ -389,7 +377,7 @@ class Types(WObject):
         @type definitions: L{Definitions}
 
         """
-        WObject.__init__(self)
+        WObject.__init__(self, root, definitions)
         self.definitions = definitions
 
     def contents(self):

@@ -47,7 +47,7 @@ from logging import getLogger
 log = getLogger(__name__)
 
 
-class Client(UnicodeMixin):
+class Client(object):
     """
     A lightweight web service client.
 
@@ -122,10 +122,7 @@ class Client(UnicodeMixin):
 
     @asyncio.coroutine
     def connect(self):
-        df = Definitions(self.url, self.options)
-        yield from df.connect()
-        self.reader = DefinitionsReader(self.options, df.parse)
-        yield from self.reader.open(self.url)
+        self.reader = DefinitionsReader(self.options, Definitions)
         self.wsdl = yield from self.reader.open(self.url)
         self.factory = Factory(self.wsdl)
         self.service = ServiceSelector(self, self.wsdl.services)
@@ -717,6 +714,7 @@ class _SoapClient:
         metrics.log.debug("method '%s' invoked: %s", method_name, timer)
         return result
 
+    @asyncio.coroutine
     def send(self, soapenv):
         """
         Send SOAP message.
@@ -754,13 +752,13 @@ class _SoapClient:
         try:
             timer = metrics.Timer()
             timer.start()
-            reply = self.options.transport.send(request)
+            reply = yield from self.options.transport.send(request)
             timer.stop()
             metrics.log.debug("waited %s on server reply", timer)
         except suds.transport.TransportError as e:
             content = e.fp and e.fp.read() or ""
             return self.process_reply(content, e.httpcode, tostr(e))
-        return self.process_reply(reply.message, None, None)
+        return self.process_reply(reply, None, None)
 
     def process_reply(self, reply, status, description):
         """
@@ -868,8 +866,6 @@ class _SoapClient:
 
         """
         action = self.method.soap.action
-        if isinstance(action, str):
-            action = action.encode("utf-8")
         result = {
             "Content-Type": "text/xml; charset=utf-8",
             "SOAPAction": action}
@@ -896,7 +892,7 @@ class _SimClient(_SoapClient):
     @classmethod
     def simulation(cls, kwargs):
         """Get whether injected data has been specified in I{kwargs}."""
-        return kwargs.has_key(_SimClient.__injkey)
+        return _SimClient.__injkey in kwargs
 
     def invoke(self, args, kwargs):
         """

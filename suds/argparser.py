@@ -263,7 +263,7 @@ class _ArgParser:
         if len(stack) == 1:
             return stack[0], ancestry
         previous = stack[0]
-        for frame, n in zip(stack[1:], xrange(len(ancestry))):
+        for frame, n in zip(stack[1:], range(len(ancestry))):
             if frame.id() is not ancestry[n]:
                 return previous, ancestry[n:]
             previous = frame

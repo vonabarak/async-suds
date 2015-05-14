@@ -25,11 +25,8 @@ from suds.sax.element import Element
 from suds.sax.date import DateTime, UtcTimezone
 from datetime import datetime, timedelta
 
-try:
-    from hashlib import md5
-except ImportError:
-    # Python 2.4 compatibility
-    from md5 import md5
+from hashlib import md5
+
 
 
 dsns = \

@@ -20,7 +20,7 @@
 
 """Classes for conversion between XML dates and Python objects."""
 
-from suds import UnicodeMixin
+
 
 import datetime
 import re
@@ -47,7 +47,7 @@ _RE_TIME = re.compile(_PATTERN_TIME)
 _RE_DATETIME = re.compile(_PATTERN_DATETIME)
 
 
-class Date(UnicodeMixin):
+class Date(object):
     """
     An XML date object supporting the xsd:date datatype.
 
@@ -67,7 +67,7 @@ class Date(UnicodeMixin):
             self.value = value.date()
         elif isinstance(value, datetime.date):
             self.value = value
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             self.value = self.__parse(value)
         else:
             raise ValueError("invalid type for Date(): %s" % type(value))
@@ -95,11 +95,11 @@ class Date(UnicodeMixin):
             raise ValueError("date data has invalid format '%s'" % (value,))
         return _date_from_match(match_result)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.value.isoformat()
 
 
-class DateTime(UnicodeMixin):
+class DateTime(object):
     """
     An XML datetime object supporting the xsd:dateTime datatype.
 
@@ -117,7 +117,7 @@ class DateTime(UnicodeMixin):
         """
         if isinstance(value, datetime.datetime):
             self.value = value
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             self.value = self.__parse(value)
         else:
             raise ValueError("invalid type for DateTime(): %s" % type(value))
@@ -153,11 +153,11 @@ class DateTime(UnicodeMixin):
             value += datetime.timedelta(microseconds=1)
         return value
 
-    def __unicode__(self):
+    def __str__(self):
         return self.value.isoformat()
 
 
-class Time(UnicodeMixin):
+class Time(object):
     """
     An XML time object supporting the xsd:time datatype.
 
@@ -175,7 +175,7 @@ class Time(UnicodeMixin):
         """
         if isinstance(value, datetime.time):
             self.value = value
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             self.value = self.__parse(value)
         else:
             raise ValueError("invalid type for Time(): %s" % type(value))
@@ -207,11 +207,11 @@ class Time(UnicodeMixin):
             time = _bump_up_time_by_microsecond(time)
         return time.replace(tzinfo=tzinfo)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.value.isoformat()
 
 
-class FixedOffsetTimezone(datetime.tzinfo, UnicodeMixin):
+class FixedOffsetTimezone(datetime.tzinfo, object):
     """
     A timezone with a fixed offset and no daylight savings adjustment.
 
@@ -273,7 +273,7 @@ class FixedOffsetTimezone(datetime.tzinfo, UnicodeMixin):
             return "%+03d:%02d:%02d" % (hours, minutes, seconds)
         return "%+03d:%02d" % (hours, minutes)
 
-    def __unicode__(self):
+    def __str__(self):
         return "FixedOffsetTimezone %s" % (self.tzname(None),)
 
 
@@ -295,7 +295,7 @@ class UtcTimezone(FixedOffsetTimezone):
         """
         return "UTC"
 
-    def __unicode__(self):
+    def __str__(self):
         return "UtcTimezone"
 
 
@@ -347,7 +347,7 @@ class LocalTimezone(datetime.tzinfo):
         time_tuple = time.localtime(time.mktime(time_tuple))
         return time_tuple.tm_isdst > 0
 
-    def __unicode__(self):
+    def __str__(self):
         dt = datetime.datetime.now()
         return "LocalTimezone %s offset: %s dst: %s" % (self.tzname(dt),
             self.utcoffset(dt), self.dst(dt))

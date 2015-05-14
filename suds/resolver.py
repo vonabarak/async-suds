@@ -326,6 +326,7 @@ class NodeResolver(TreeResolver):
         @rtype: L{xsd.sxbase.SchemaObject}
         """
         name = node.name
+        self.node = node
         parent = self.top().resolved
         if parent is None:
             result, ancestry = self.query(name, node)
@@ -355,7 +356,7 @@ class NodeResolver(TreeResolver):
         name = '@%s'%name
         parent = self.top().resolved
         if parent is None:
-            result, ancestry = self.query(name, node)
+            result, ancestry = self.query(name, self.node)
         else:
             result, ancestry = self.getchild(name, parent)
         if result is None:

@@ -18,7 +18,7 @@ Contains transport interface (classes).
 
 """
 
-from suds import UnicodeMixin
+
 
 import sys
 
@@ -30,7 +30,7 @@ class TransportError(Exception):
         self.fp = fp
 
 
-class Request(UnicodeMixin):
+class Request(object):
     """
     A transport request.
 
@@ -65,7 +65,7 @@ class Request(UnicodeMixin):
         self.headers = {}
         self.message = message
 
-    def __unicode__(self):
+    def __str__(self):
         result = [u"URL: %s\nHEADERS: %s" % (self.url, self.headers)]
         if self.message is not None:
             result.append(u"MESSAGE:")
@@ -90,7 +90,7 @@ class Request(UnicodeMixin):
             self.url = url.decode("ascii")
 
 
-class Reply(UnicodeMixin):
+class Reply(object):
     """
     A transport reply.
 
@@ -117,7 +117,7 @@ class Reply(UnicodeMixin):
         self.headers = headers
         self.message = message
 
-    def __unicode__(self):
+    def __str__(self):
         return u"""\
 CODE: %s
 HEADERS: %s
