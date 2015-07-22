@@ -103,7 +103,7 @@ class Client(object):
         """
         return sobject.__metadata__
 
-    def __init__(self, url, **kwargs):
+    def __init__(self, url, verify_ssl=True, **kwargs):
         """
         @param url: The URL for the WSDL.
         @type url: str
@@ -119,11 +119,13 @@ class Client(object):
         self.headers = kwargs.get('headers')
         self.set_options(**kwargs)
         self.url = url
+        self.verify_ssl = verify_ssl
 
 
     @asyncio.coroutine
     def connect(self):
         self.reader = DefinitionsReader(self.options, Definitions)
+        self.reader.verify_ssl = self.verify_ssl
         self.wsdl = yield from self.reader.open(self.url, headers=self.headers)
         self.factory = Factory(self.wsdl)
         self.service = ServiceSelector(self, self.wsdl.services)
@@ -570,6 +572,7 @@ class Method:
         """Invoke the method."""
         clientclass = self.clientclass(kwargs)
         client = clientclass(self.client, self.method)
+        client.verify_ssl = self.client.verify_ssl
         try:
             return client.invoke(args, kwargs)
         except WebFault as e:
@@ -672,6 +675,7 @@ class _SoapClient:
         self.method = method
         self.options = client.options
         self.cookiejar = CookieJar()
+        self.verify_ssl = True
 
     def invoke(self, args, kwargs):
         """
@@ -750,6 +754,7 @@ class _SoapClient:
             return RequestContext(self.process_reply, soapenv)
         request = asyncsuds.transport.Request(location, soapenv)
         request.headers = self.__headers()
+        request.verify_ssl = self.verify_ssl
         try:
             timer = metrics.Timer()
             timer.start()

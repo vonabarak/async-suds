@@ -146,6 +146,7 @@ class Definitions(WObject):
         self.bindings = {}
         self.services = []
         self.headers = headers or {}
+        self.verify_ssl = True
 
     def __call__(self):
         """
@@ -160,6 +161,7 @@ class Definitions(WObject):
 
     @asyncio.coroutine
     def connect(self):
+        self.reader.verify_ssl = self.verify_ssl
         d = yield from self.reader.open(self.url, headers=self.headers)
         self.root = d.root()
         WObject.__init__(self, self.root)

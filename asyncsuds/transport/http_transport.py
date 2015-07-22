@@ -61,8 +61,7 @@ class HttpTransport(Transport):
     def open(self, request):
         headers = request.headers
         log.debug('sending:\n%s', request)
-        connector = aiohttp.TCPConnector(verify_ssl=self.options.verify_ssl
-            if hasattr(self.options, 'verify_ssl') else True)
+        connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
         try:
             res = yield from async_request('GET', request.url, headers=headers, cookies=dict(self.cookiejar),
                                            connector=connector)
@@ -79,8 +78,7 @@ class HttpTransport(Transport):
         msg = request.message
         headers = request.headers
         log.debug('sending:\n%s', request)
-        connector = aiohttp.TCPConnector(verify_ssl=self.options.verify_ssl
-            if hasattr(self.options, 'verify_ssl') else True)
+        connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
         try:
             res = yield from async_request('POST', request.url, data=msg, headers=headers, cookies=dict(self.cookiejar),
                                            connector=connector)
