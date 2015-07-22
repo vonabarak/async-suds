@@ -410,10 +410,8 @@ else:
         # The test build can not be done in-place with Python 3+ as it requires
         # py2to3 conversion which we do not want modifying our original project
         # sources.
-        if sys.version_info < (3,):
-            description = "run pytest based unit tests after an in-place build"
-        else:
-            description = "run pytest based unit tests after a build"
+
+        description = "run pytest based unit tests after a build"
 
         # Override base class's command-line options.
         #TODO: pytest argument passing support could be improved if we could
@@ -465,26 +463,6 @@ distutils_cmdclass["test"] = TestCommand
 # distutils.setup() 'obsoletes' parameter not introduced until Python 2.5.
 extra_setup_params["obsoletes"] = ["suds"]
 
-
-# -----------------------------------------------------------------------------
-# Integrate py2to3 into our build operation.
-# -----------------------------------------------------------------------------
-
-if sys.version_info >= (3,):
-    # Integrate the py2to3 step into our build.
-    if using_setuptools:
-        extra_setup_params["use_2to3"] = True
-    else:
-        from distutils.command.build_py import build_py_2to3
-        distutils_cmdclass["build_py"] = build_py_2to3
-
-    # Teach Python's urllib lib2to3 fixer that the old urllib2.__version__ data
-    # member is now stored in the urllib.request module.
-    import lib2to3.fixes.fix_urllib
-    for x in lib2to3.fixes.fix_urllib.MAPPING["urllib2"]:
-        if x[0] == "urllib.request":
-            x[1].append("__version__")
-            break
 
 
 # -----------------------------------------------------------------------------
