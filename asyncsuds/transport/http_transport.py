@@ -26,6 +26,7 @@ from http.cookiejar import CookieJar
 import sys
 import asyncio
 from aiohttp.client import request as async_request
+import aiohttp
 
 from logging import getLogger
 log = getLogger(__name__)
@@ -60,10 +61,17 @@ class HttpTransport(Transport):
     def open(self, request):
         headers = request.headers
         log.debug('sending:\n%s', request)
-        res = yield from async_request('GET', request.url, headers=headers, cookies=dict(self.cookiejar))
-        reply = yield from res.content.read()
-        log.debug('received:\n%s', reply)
-        return str(reply, encoding='utf-8')
+        connector = aiohttp.TCPConnector(verify_ssl=self.options.verify_ssl
+            if hasattr(self.options, 'verify_ssl') else True)
+        try:
+            res = yield from async_request('GET', request.url, headers=headers, cookies=dict(self.cookiejar),
+                                           connector=connector)
+            reply = yield from res.content.read()
+            res.close()
+            log.debug('received:\n%s', reply)
+            return str(reply, encoding='utf-8')
+        finally:
+            connector.close()
 
 
     @asyncio.coroutine
@@ -71,10 +79,18 @@ class HttpTransport(Transport):
         msg = request.message
         headers = request.headers
         log.debug('sending:\n%s', request)
-        res = yield from async_request('POST', request.url, data=msg, headers=headers, cookies=dict(self.cookiejar))
-        reply = yield from res.content.read()
-        log.debug('received:\n%s', reply)
-        return str(reply, encoding='utf-8')
+        connector = aiohttp.TCPConnector(verify_ssl=self.options.verify_ssl
+            if hasattr(self.options, 'verify_ssl') else True)
+        try:
+            res = yield from async_request('POST', request.url, data=msg, headers=headers, cookies=dict(self.cookiejar),
+                                           connector=connector)
+            reply = yield from res.content.read()
+            res.close()
+            log.debug('received:\n%s', reply)
+            return str(reply, encoding='utf-8')
+        finally:
+            connector.close()
+
 
     def __deepcopy__(self):
         clone = self.__class__()

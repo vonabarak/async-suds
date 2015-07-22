@@ -3,16 +3,18 @@ __author__ = 'kamyar'
 import asyncio
 from asyncsuds.client import Client
 import logging
+import uuid
 
 
 # logging.basicConfig(level=logging.DEBUG)
 
 @asyncio.coroutine
 def Test():
-    c=Client('http://www.webservicex.net/whois.asmx?WSDL')
+    c=Client('https://sep.shaparak.ir/Payments/InitPayment.asmx?wsdl', headers={'User-Agent':'Snapp'})
     yield from c.connect()
-    res = yield from c.service.GetWhoIS('samasoft.ir')
+    res = yield from c.service.RequestToken('10345926', uuid.uuid1().hex, 1000)
     print(res)
 
-asyncio.get_event_loop().run_until_complete(Test())
-asyncio.get_event_loop().close()
+asyncio.async(Test())
+asyncio.get_event_loop().run_forever()
+# asyncio.get_event_loop().close()

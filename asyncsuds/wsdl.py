@@ -130,7 +130,7 @@ class Definitions(WObject):
 
     Tag = "definitions"
 
-    def __init__(self, url, options):
+    def __init__(self, url, options, headers=None):
         log.debug("reading WSDL at: %s ...", url)
         Object.__init__(self)
         self.url = url
@@ -145,6 +145,7 @@ class Definitions(WObject):
         self.port_types = {}
         self.bindings = {}
         self.services = []
+        self.headers = headers or {}
 
     def __call__(self):
         """
@@ -159,7 +160,7 @@ class Definitions(WObject):
 
     @asyncio.coroutine
     def connect(self):
-        d = yield from self.reader.open(self.url)
+        d = yield from self.reader.open(self.url, headers=self.headers)
         self.root = d.root()
         WObject.__init__(self, self.root)
         self.tns = self.mktns(self.root)

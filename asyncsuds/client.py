@@ -116,6 +116,7 @@ class Client(object):
         self.options = options
         if "cache" not in kwargs:
             kwargs["cache"] = asyncsuds.cache.ObjectCache(days=1)
+        self.headers = kwargs.get('headers')
         self.set_options(**kwargs)
         self.url = url
 
@@ -123,7 +124,7 @@ class Client(object):
     @asyncio.coroutine
     def connect(self):
         self.reader = DefinitionsReader(self.options, Definitions)
-        self.wsdl = yield from self.reader.open(self.url)
+        self.wsdl = yield from self.reader.open(self.url, headers=self.headers)
         self.factory = Factory(self.wsdl)
         self.service = ServiceSelector(self, self.wsdl.services)
         self.sd_list = []

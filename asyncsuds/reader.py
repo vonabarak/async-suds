@@ -45,6 +45,7 @@ class Reader(object):
         """
         self.options = options
         self.plugins = asyncsuds.plugin.PluginContainer(options.plugins)
+        self.headers = {}
 
     def mangle(self, name, x):
         """
@@ -80,7 +81,7 @@ class DefinitionsReader(Reader):
         self.fn = fn
 
     @asyncio.coroutine
-    def open(self, url):
+    def open(self, url, headers=None):
         """
         Open a WSDL schema at the specified I{URL}.
 
@@ -98,7 +99,7 @@ class DefinitionsReader(Reader):
         id = self.mangle(url, "wsdl")
         wsdl = cache.get(id)
         if wsdl is None:
-            wsdl = self.fn(url, self.options)
+            wsdl = self.fn(url, self.options, headers=headers)
             yield from wsdl.connect()
             cache.put(id, wsdl)
         else:
@@ -127,7 +128,7 @@ class DocumentReader(Reader):
     """Integrates between the SAX L{Parser} and the document cache."""
 
     @asyncio.coroutine
-    def open(self, url):
+    def open(self, url, headers=None):
         """
         Open an XML document at the specified I{URL}.
 
@@ -143,6 +144,7 @@ class DocumentReader(Reader):
         """
         cache = self.__cache()
         id = self.mangle(url, "document")
+        self.headers = headers or {}
         xml = cache.get(id)
         if xml is None:
             xml = yield from self.__fetch(url)
@@ -185,7 +187,7 @@ class DocumentReader(Reader):
         if store is not None:
             content = store.open(url)
         if content is None:
-            request = asyncsuds.transport.Request(url)
+            request = asyncsuds.transport.Request(url, headers=self.headers)
             content = yield from self.options.transport.open(request)
         ctx = self.plugins.document.loaded(url=url, document=content)
         content = ctx.document
