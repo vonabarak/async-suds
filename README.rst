@@ -1,7 +1,7 @@
 SOAP 1 and 1.1 client base on asyncio (PEP3156)
 ===============================================
 
-This package is a fork pg great old package suds, but we had to make a bit change to be able to make the whole tyihng async: You have to call an extar method cvalled connect, since we can not yield (or await) constructur.
+This package is a fork of great old package suds, but we had to make a bit change to be able to make the whole thing async: You have to call an extra method called connect, since we can not yield (or await) constructur.
 
 .. code-block:: python
 
