@@ -9,6 +9,6 @@ This package is a fork of great old package suds, but we had to make a bit chang
 	
 	c = Client(service_uri)
 	await c.connect()  # Here is the difference!
-	result = c.HelloWorld('Kamyar')
+	result = await c.HelloWorld('Kamyar')
 	
 Please help me with your opinions and bug/feature reports.
