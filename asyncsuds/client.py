@@ -103,7 +103,7 @@ class Client(object):
         """
         return sobject.__metadata__
 
-    def __init__(self, url, verify_ssl=True, **kwargs):
+    def __init__(self, url, verify_ssl=True, proxy=None , **kwargs):
         """
         @param url: The URL for the WSDL.
         @type url: str
@@ -120,12 +120,14 @@ class Client(object):
         self.set_options(**kwargs)
         self.url = url
         self.verify_ssl = verify_ssl
+        self.proxy = proxy
 
 
     @asyncio.coroutine
     def connect(self):
         self.reader = DefinitionsReader(self.options, Definitions)
         self.reader.verify_ssl = self.verify_ssl
+        self.reader.proxy = self.proxy
         self.wsdl = yield from self.reader.open(self.url, headers=self.headers)
         self.factory = Factory(self.wsdl)
         self.service = ServiceSelector(self, self.wsdl.services)

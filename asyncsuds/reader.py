@@ -47,6 +47,7 @@ class Reader(object):
         self.plugins = asyncsuds.plugin.PluginContainer(options.plugins)
         self.headers = {}
         self.verify_ssl = True
+        self.proxy = None
 
     def mangle(self, name, x):
         """
@@ -102,6 +103,7 @@ class DefinitionsReader(Reader):
         if wsdl is None:
             wsdl = self.fn(url, self.options, headers=headers)
             wsdl.verify_ssl = self.verify_ssl
+            wsdl.proxy = self.proxy
             yield from wsdl.connect()
             cache.put(id, wsdl)
         else:
@@ -191,6 +193,7 @@ class DocumentReader(Reader):
         if content is None:
             request = asyncsuds.transport.Request(url, headers=self.headers)
             request.verify_ssl = self.verify_ssl
+            request.proxy = self.proxy
             content = yield from self.options.transport.open(request)
         ctx = self.plugins.document.loaded(url=url, document=content)
         content = ctx.document

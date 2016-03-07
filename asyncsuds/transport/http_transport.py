@@ -54,22 +54,24 @@ class HttpTransport(Transport):
         Transport.__init__(self)
         Unskin(self.options).update(kwargs)
         self.cookiejar = CookieJar()
-        self.proxy = {}
-        self.urlopener = None
 
     @asyncio.coroutine
     def open(self, request):
         headers = request.headers
         log.debug('sending:\n%s', request)
-        connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
+        if request.proxy:
+            connector = aiohttp.ProxyConnector(proxy=request.proxy,verify_ssl=request.verify_ssl)
+        else:
+            connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
+        client = aiohttp.ClientSession(connector=connector, cookies=dict(self.cookiejar))
         try:
-            res = yield from async_request('GET', request.url, headers=headers, cookies=dict(self.cookiejar),
-                                           connector=connector)
+            res = yield from client.get(request.url, headers=headers)
             reply = yield from res.content.read()
             res.close()
             log.debug('received:\n%s', reply)
             return str(reply, encoding='utf-8')
         finally:
+            client.close()
             connector.close()
 
 
@@ -78,15 +80,19 @@ class HttpTransport(Transport):
         msg = request.message
         headers = request.headers
         log.debug('sending:\n%s', request)
-        connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
+        if request.proxy:
+            connector = aiohttp.ProxyConnector(proxy=request.proxy,verify_ssl=request.verify_ssl)
+        else:
+            connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
+        client = aiohttp.ClientSession(connector=connector, cookies=dict(self.cookiejar))
         try:
-            res = yield from async_request('POST', request.url, data=msg, headers=headers, cookies=dict(self.cookiejar),
-                                           connector=connector)
+            res = yield from client.post(request.url, data=msg, headers=headers)
             reply = yield from res.content.read()
             res.close()
             log.debug('received:\n%s', reply)
             return str(reply, encoding='utf-8')
         finally:
+            client.close()
             connector.close()
 
 

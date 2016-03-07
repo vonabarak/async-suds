@@ -65,6 +65,7 @@ class Request(object):
         self.headers = headers
         self.message = message
         self.verify_ssl = True
+        self.proxy = None
 
     def __str__(self):
         result = [u"URL: %s\nHEADERS: %s" % (self.url, self.headers)]
