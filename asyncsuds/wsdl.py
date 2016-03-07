@@ -173,7 +173,7 @@ class Definitions(WObject):
         pmd.excludes.append("children")
         pmd.excludes.append("wsdl")
         pmd.wrappers["schema"] = repr
-        self.open_imports()
+        yield from self.open_imports()
         self.resolve()
         self.build_schema()
         self.set_wrapped()
@@ -216,10 +216,11 @@ class Definitions(WObject):
                 self.services.append(child)
                 continue
 
+    @asyncio.coroutine
     def open_imports(self):
         """Import the I{imported} WSDLs."""
         for imp in self.imports:
-            imp.load(self)
+            yield from imp.load(self)
 
     def resolve(self):
         """Tell all children to resolve themselves."""
@@ -328,6 +329,7 @@ class Import(WObject):
         pmd = self.__metadata__.__print__
         pmd.wrappers["imported"] = repr
 
+    @asyncio.coroutine
     def load(self, definitions):
         """Load the object by opening the URL."""
         url = self.location
@@ -336,6 +338,7 @@ class Import(WObject):
             url = urljoin(definitions.url, url)
         options = definitions.options
         d = Definitions(url, options)
+        yield from d.connect()
         if d.root.match(Definitions.Tag, wsdlns):
             self.import_definitions(definitions, d)
             return
