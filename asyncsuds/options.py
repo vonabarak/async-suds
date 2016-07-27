@@ -24,6 +24,7 @@ from asyncsuds.store import DocumentStore, defaultDocumentStore
 from asyncsuds.transport import Transport
 from asyncsuds.wsse import Security
 from asyncsuds.xsd.doctor import Doctor
+from asyncio import BaseEventLoop
 
 
 class TpLinker(AutoLinker):
@@ -146,5 +147,6 @@ class Options(Skin):
             Definition('cachingpolicy', int, 0),
             Definition('plugins', (list, tuple), []),
             Definition('nosend', bool, False),
-            Definition('unwrap', bool, True)]
+            Definition('unwrap', bool, True),
+            Definition('loop', (BaseEventLoop,), None)]
         Skin.__init__(self, domain, definitions, kwargs)

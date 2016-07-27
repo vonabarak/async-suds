@@ -21,6 +21,7 @@ Classes modeling transport options.
 
 from asyncsuds.transport import *
 from asyncsuds.properties import *
+from asyncio import BaseEventLoop
 
 
 class Options(Skin):

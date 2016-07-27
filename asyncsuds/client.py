@@ -103,7 +103,7 @@ class Client(object):
         """
         return sobject.__metadata__
 
-    def __init__(self, url, verify_ssl=True, proxy=None , **kwargs):
+    def __init__(self, url, verify_ssl=True, proxy=None , loop=None, **kwargs):
         """
         @param url: The URL for the WSDL.
         @type url: str
@@ -111,13 +111,14 @@ class Client(object):
         @see: L{Options}
 
         """
+        loop = loop or asyncio.get_event_loop()
         options = Options()
         options.transport = asyncsuds.transport.https.HttpAuthenticated()
         self.options = options
         if "cache" not in kwargs:
             kwargs["cache"] = asyncsuds.cache.ObjectCache(days=1)
         self.headers = kwargs.get('headers')
-        self.set_options(**kwargs)
+        self.set_options(**kwargs, loop=loop)
         self.url = url
         self.verify_ssl = verify_ssl
         self.proxy = proxy

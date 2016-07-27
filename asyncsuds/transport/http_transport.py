@@ -60,10 +60,13 @@ class HttpTransport(Transport):
         headers = request.headers
         log.debug('sending:\n%s', request)
         if request.proxy:
-            connector = aiohttp.ProxyConnector(proxy=request.proxy,verify_ssl=request.verify_ssl)
+            connector = aiohttp.ProxyConnector(
+                proxy=request.proxy, verify_ssl=request.verify_ssl, loop=self.options.loop)
         else:
-            connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
-        client = aiohttp.ClientSession(connector=connector, cookies=dict(self.cookiejar))
+            connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl,
+                                             loop=self.options.loop)
+        client = aiohttp.ClientSession(connector=connector, cookies=dict(self.cookiejar),
+                                       loop=self.options.loop)
         try:
             res = yield from client.get(request.url, headers=headers)
             reply = yield from res.content.read()
@@ -81,10 +84,13 @@ class HttpTransport(Transport):
         headers = request.headers
         log.debug('sending:\n%s', request)
         if request.proxy:
-            connector = aiohttp.ProxyConnector(proxy=request.proxy,verify_ssl=request.verify_ssl)
+            connector = aiohttp.ProxyConnector(
+                proxy=request.proxy, verify_ssl=request.verify_ssl, loop=self.options.loop)
         else:
-            connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl)
-        client = aiohttp.ClientSession(connector=connector, cookies=dict(self.cookiejar))
+            connector = aiohttp.TCPConnector(verify_ssl=request.verify_ssl,
+                                             loop=self.options.loop)
+        client = aiohttp.ClientSession(connector=connector, cookies=dict(self.cookiejar),
+                                       loop=self.options.loop)
         try:
             res = yield from client.post(request.url, data=msg, headers=headers)
             reply = yield from res.content.read()
