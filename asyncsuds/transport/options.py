@@ -55,5 +55,6 @@ class Options(Skin):
             Definition('timeout', (int,float), 90),
             Definition('headers', dict, {}),
             Definition('username', str, None),
-            Definition('password', str, None)]
+            Definition('password', str, None),
+            Definition('verify_ssl', (bool,), True)]
         Skin.__init__(self, domain, definitions, kwargs)
