@@ -11,7 +11,7 @@ from asyncsuds.sax import Namespace
 from asyncsuds.sax import splitPrefix
 from asyncsuds.sudsobject import Object
 from asyncsuds.xsd.query import BlindQuery
-from asyncsuds.xsd.query import qualify
+from asyncsuds.xsd.sxbase import qualify
 
 log = getLogger(__name__)
 
