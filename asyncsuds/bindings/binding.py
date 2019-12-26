@@ -18,22 +18,20 @@
 
 """
 
+from copy import deepcopy
+
 from asyncsuds import *
+from asyncsuds.bindings.multiref import MultiRef
+from asyncsuds.mx import Content
+from asyncsuds.mx.literal import Literal as MxLiteral
 from asyncsuds.sax import Namespace
 from asyncsuds.sax.document import Document
 from asyncsuds.sax.element import Element
 from asyncsuds.sudsobject import Factory
-from asyncsuds.mx import Content
-from asyncsuds.mx.literal import Literal as MxLiteral
 from asyncsuds.umx.typed import Typed as UmxTyped
-from asyncsuds.bindings.multiref import MultiRef
-from asyncsuds.xsd.query import TypeQuery, ElementQuery
+from asyncsuds.xsd.query import ElementQuery
+from asyncsuds.xsd.query import TypeQuery
 from asyncsuds.xsd.sxbasic import Element as SchemaElement
-from asyncsuds.options import Options
-from asyncsuds.plugin import PluginContainer
-
-from copy import deepcopy
-
 
 envns = ("SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/")
 
@@ -218,7 +216,7 @@ class Binding(object):
                     setattr(composite, tag, sobject)
             else:
                 if not isinstance(value, list):
-                    value = [value,]
+                    value = [value]
                     setattr(composite, tag, value)
                 value.append(sobject)
         return composite
@@ -239,8 +237,9 @@ class Binding(object):
 
         """
         marshaller = self.marshaller()
-        content = Content(tag=pdef[0], value=object, type=pdef[1],
-            real=pdef[1].resolve())
+        content = Content(
+            tag=pdef[0], value=object, type=pdef[1], real=pdef[1].resolve()
+        )
         return marshaller.process(content)
 
     def mkheader(self, method, hdef, object):

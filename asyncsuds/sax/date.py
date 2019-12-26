@@ -21,26 +21,24 @@
 """Classes for conversion between XML dates and Python objects."""
 
 
-
 import datetime
 import re
 import time
 
-
-_SNIPPET_DATE =  \
-    r"(?P<year>\d{1,})-(?P<month>\d{1,2})-(?P<day>\d{1,2})"
-_SNIPPET_TIME =  \
-    r"(?P<hour>\d{1,2}):(?P<minute>[0-5]?[0-9]):(?P<second>[0-5]?[0-9])"  \
+_SNIPPET_DATE = r"(?P<year>\d{1,})-(?P<month>\d{1,2})-(?P<day>\d{1,2})"
+_SNIPPET_TIME = (
+    r"(?P<hour>\d{1,2}):(?P<minute>[0-5]?[0-9]):(?P<second>[0-5]?[0-9])"
     r"(?:\.(?P<subsecond>\d+))?"
-_SNIPPET_ZONE =  \
-    r"(?:(?P<tz_sign>[-+])(?P<tz_hour>\d{1,2})"  \
-    r"(?::(?P<tz_minute>[0-5]?[0-9]))?)"  \
+)
+_SNIPPET_ZONE = (
+    r"(?:(?P<tz_sign>[-+])(?P<tz_hour>\d{1,2})"
+    r"(?::(?P<tz_minute>[0-5]?[0-9]))?)"
     r"|(?P<tz_utc>[Zz])"
+)
 
 _PATTERN_DATE = r"^%s(?:%s)?$" % (_SNIPPET_DATE, _SNIPPET_ZONE)
 _PATTERN_TIME = r"^%s(?:%s)?$" % (_SNIPPET_TIME, _SNIPPET_ZONE)
-_PATTERN_DATETIME = r"^%s[T ]%s(?:%s)?$" % (_SNIPPET_DATE, _SNIPPET_TIME,
-                                            _SNIPPET_ZONE)
+_PATTERN_DATETIME = r"^%s[T ]%s(?:%s)?$" % (_SNIPPET_DATE, _SNIPPET_TIME, _SNIPPET_ZONE)
 
 _RE_DATE = re.compile(_PATTERN_DATE)
 _RE_TIME = re.compile(_PATTERN_TIME)
@@ -141,7 +139,7 @@ class DateTime(object):
         """
         match_result = _RE_DATETIME.match(value)
         if match_result is None:
-           raise ValueError("date data has invalid format '%s'" % (value,))
+            raise ValueError("date data has invalid format '%s'" % (value,))
 
         date = _date_from_match(match_result)
         time, round_up = _time_from_match(match_result)
@@ -199,7 +197,7 @@ class Time(object):
         """
         match_result = _RE_TIME.match(value)
         if match_result is None:
-           raise ValueError("date data has invalid format '%s'" % (value,))
+            raise ValueError("date data has invalid format '%s'" % (value,))
 
         time, round_up = _time_from_match(match_result)
         tzinfo = _tzinfo_from_match(match_result)
@@ -228,8 +226,7 @@ class FixedOffsetTimezone(datetime.tzinfo, object):
         if type(offset) == int:
             offset = datetime.timedelta(hours=offset)
         elif type(offset) != datetime.timedelta:
-            raise TypeError("timezone offset must be an int or "
-                "datetime.timedelta")
+            raise TypeError("timezone offset must be an int or " "datetime.timedelta")
         if offset.microseconds or (offset.seconds % 60 != 0):
             raise ValueError("timezone offset must have minute precision")
         self.__offset = offset
@@ -257,8 +254,9 @@ class FixedOffsetTimezone(datetime.tzinfo, object):
         if hasattr(self.__offset, "total_seconds"):
             total_seconds = self.__offset.total_seconds()
         else:
-            total_seconds = (self.__offset.days * 24 * 60 * 60) + \
-                            (self.__offset.seconds)
+            total_seconds = (self.__offset.days * 24 * 60 * 60) + (
+                self.__offset.seconds
+            )
 
         hours = total_seconds // (60 * 60)
         total_seconds -= hours * 60 * 60
@@ -349,8 +347,11 @@ class LocalTimezone(datetime.tzinfo):
 
     def __str__(self):
         dt = datetime.datetime.now()
-        return "LocalTimezone %s offset: %s dst: %s" % (self.tzname(dt),
-            self.utcoffset(dt), self.dst(dt))
+        return "LocalTimezone %s offset: %s dst: %s" % (
+            self.tzname(dt),
+            self.utcoffset(dt),
+            self.dst(dt),
+        )
 
 
 def _bump_up_time_by_microsecond(time):
@@ -364,8 +365,9 @@ def _bump_up_time_by_microsecond(time):
     @rtype: B{datetime}.I{time}
 
     """
-    dt = datetime.datetime(2000, 1, 1, time.hour, time.minute,
-        time.second, time.microsecond)
+    dt = datetime.datetime(
+        2000, 1, 1, time.hour, time.minute, time.second, time.microsecond
+    )
     dt += datetime.timedelta(microseconds=1)
     return dt.time()
 
@@ -408,10 +410,10 @@ def _time_from_match(match_object):
     @rtype: tuple of B{datetime}.I{time} and bool
 
     """
-    hour = int(match_object.group('hour'))
-    minute = int(match_object.group('minute'))
-    second = int(match_object.group('second'))
-    subsecond = match_object.group('subsecond')
+    hour = int(match_object.group("hour"))
+    minute = int(match_object.group("minute"))
+    second = int(match_object.group("second"))
+    subsecond = match_object.group("subsecond")
 
     round_up = False
     microsecond = 0

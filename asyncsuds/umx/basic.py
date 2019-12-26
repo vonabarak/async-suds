@@ -18,7 +18,7 @@
 Provides basic unmarshaller classes.
 """
 
-from logging import getLogger
+
 from asyncsuds import *
 from asyncsuds.umx import *
 from asyncsuds.umx.core import Core

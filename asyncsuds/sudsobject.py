@@ -19,9 +19,10 @@ interactions with WSDL/XSD defined types.
 
 """
 
+from logging import getLogger
+
 from asyncsuds import *
 
-from logging import getLogger
 log = getLogger(__name__)
 
 
@@ -53,6 +54,7 @@ def asdict(sobject):
     """
     return dict(items(sobject))
 
+
 def merge(a, b):
     """
     Merge all attributes and metadata from I{a} to I{b}.
@@ -67,6 +69,7 @@ def merge(a, b):
         setattr(b, item[0], item[1])
         b.__metadata__ = b.__metadata__
     return b
+
 
 def footprint(sobject):
     """
@@ -136,7 +139,6 @@ class Factory:
 
 
 class Object(object):
-
     def __init__(self):
         self.__keylist__ = []
         self.__printer__ = Printer()
@@ -155,7 +157,7 @@ class Object(object):
             if not builtin:
                 self.__keylist__.remove(name)
         except Exception:
-            cls = self.__class__.__name__
+            self.__class__.__name__
             raise AttributeError
 
     def __getitem__(self, name):
@@ -183,7 +185,6 @@ class Object(object):
 
 
 class Iter:
-
     def __init__(self, sobject):
         self.sobject = sobject
         self.keylist = self.__keylist(sobject)
@@ -207,8 +208,9 @@ class Iter:
             ordering = sobject.__metadata__.ordering
             ordered = set(ordering)
             if not ordered.issuperset(keyset):
-                log.debug("%s must be superset of %s, ordering ignored",
-                    keylist, ordering)
+                log.debug(
+                    "%s must be superset of %s, ordering ignored", keylist, ordering
+                )
                 raise KeyError()
             return ordering
         except Exception:
@@ -232,7 +234,6 @@ class Facade(Object):
 
 
 class Property(Object):
-
     def __init__(self, value):
         Object.__init__(self)
         self.value = value
@@ -309,8 +310,8 @@ class Printer:
                 continue
             item = self.unwrap(d, item)
             s.append("\n")
-            s.append(self.indent(n+1))
-            if isinstance(item[1], (list,tuple)):
+            s.append(self.indent(n + 1))
+            if isinstance(item[1], (list, tuple)):
                 s.append(item[0])
                 s.append("[]")
             else:
@@ -335,8 +336,8 @@ class Printer:
         s.append("{")
         for item in d.items():
             s.append("\n")
-            s.append(self.indent(n+1))
-            if isinstance(item[1], (list,tuple)):
+            s.append(self.indent(n + 1))
+            if isinstance(item[1], (list, tuple)):
                 s.append(tostr(item[0]))
                 s.append("[]")
             else:

@@ -92,13 +92,14 @@ class Builder:
     def add_attributes(self, data, type):
         """ add required attributes """
         for attr, ancestry in type.attributes():
-            name = '_%s' % attr.name
+            name = "_%s" % attr.name
             value = attr.get_default()
             setattr(data, name, value)
 
     def skip_child(self, child, ancestry):
         """ get whether or not to skip the specified child """
-        if child.any(): return True
+        if child.any():
+            return True
         for x in ancestry:
             if x.choice():
                 return True
@@ -112,6 +113,6 @@ class Builder:
             if child.name is None:
                 continue
             if child.isattr():
-                name = '_%s' % child.name
+                name = "_%s" % child.name
             result.append(name)
         return result

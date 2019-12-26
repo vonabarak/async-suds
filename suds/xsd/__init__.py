@@ -15,8 +15,8 @@
 # written by: Jeff Ortel ( jortel@redhat.com )
 
 
-from suds import *
-from suds.sax import Namespace, splitPrefix
+from suds.sax import Namespace
+from suds.sax import splitPrefix
 
 
 def qualify(ref, resolvers, defns=Namespace.default):
@@ -43,10 +43,11 @@ def qualify(ref, resolvers, defns=Namespace.default):
                 ns = resolved
                 break
         if ns is None:
-            raise Exception('prefix (%s) not resolved' % p)
+            raise Exception("prefix (%s) not resolved" % p)
     else:
         ns = defns
     return (n, ns[1])
+
 
 def isqref(object):
     """
@@ -56,20 +57,22 @@ def isqref(object):
     @rtype: boolean
     @see: L{qualify}
     """
-    return (\
-        isinstance(object, tuple) and \
-        len(object) == 2 and \
-        isinstance(object[0], str) and \
-        isinstance(object[1], str))
+    return (
+        isinstance(object, tuple)
+        and len(object) == 2
+        and isinstance(object[0], str)
+        and isinstance(object[1], str)
+    )
 
 
 class Filter:
     def __init__(self, inclusive=False, *items):
         self.inclusive = inclusive
         self.items = items
+
     def __contains__(self, x):
         if self.inclusive:
-            result = ( x in self.items )
+            result = x in self.items
         else:
-            result = ( x not in self.items )
+            result = x not in self.items
         return result

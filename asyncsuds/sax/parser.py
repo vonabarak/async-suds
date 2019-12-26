@@ -25,18 +25,17 @@ prefix and the URI, e.g. I{('tns', 'http://myns')}.
 
 """
 
+from io import StringIO
+from xml.sax import ContentHandler
+from xml.sax import InputSource
+from xml.sax import make_parser
+from xml.sax.handler import feature_external_ges
+
 import asyncsuds
-from asyncsuds import *
-from asyncsuds.sax import *
 from asyncsuds.sax.attribute import Attribute
 from asyncsuds.sax.document import Document
 from asyncsuds.sax.element import Element
 from asyncsuds.sax.text import Text
-
-import sys
-from xml.sax import make_parser, InputSource, ContentHandler
-from xml.sax.handler import feature_external_ges
-from io import StringIO
 
 
 class Handler(ContentHandler):

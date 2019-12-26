@@ -22,15 +22,15 @@ from asyncsuds import *
 from asyncsuds.mx import *
 from asyncsuds.mx.literal import Literal
 from asyncsuds.mx.typer import Typer
-from asyncsuds.sudsobject import Factory, Object
+from asyncsuds.sudsobject import Factory
+from asyncsuds.sudsobject import Object
 from asyncsuds.xsd.query import TypeQuery
-
 
 #
 # Add encoded extensions
 # aty = The soap (section 5) encoded array type.
 #
-Content.extensions.append('aty')
+Content.extensions.append("aty")
 
 
 class Encoded(Literal):
@@ -47,10 +47,10 @@ class Encoded(Literal):
         # containing values that are 'typed' suds objects.
         #
         start = Literal.start(self, content)
-        if start and isinstance(content.value, (list,tuple)):
+        if start and isinstance(content.value, (list, tuple)):
             resolved = content.type.resolve()
             for c in resolved:
-                if hasattr(c[0], 'aty'):
+                if hasattr(c[0], "aty"):
                     content.aty = (content.tag, c[0].aty)
                     self.cast(content)
                     break
@@ -66,14 +66,14 @@ class Encoded(Literal):
         if content.aty is None:
             return
         tag, aty = content.aty
-        ns0 = ('at0', aty[1])
-        ns1 = ('at1', 'http://schemas.xmlsoap.org/soap/encoding/')
+        ns0 = ("at0", aty[1])
+        ns1 = ("at1", "http://schemas.xmlsoap.org/soap/encoding/")
         array = content.value.item
         child = parent.getChild(tag)
         child.addPrefix(ns0[0], ns0[1])
         child.addPrefix(ns1[0], ns1[1])
-        name = '%s:arrayType' % ns1[0]
-        value = '%s:%s[%d]' % (ns0[0], aty[0], len(array))
+        name = "%s:arrayType" % ns1[0]
+        value = "%s:%s[%d]" % (ns0[0], aty[0], len(array))
         child.set(name, value)
 
     def encode(self, node, content):

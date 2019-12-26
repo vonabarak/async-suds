@@ -32,12 +32,12 @@ class Typer:
     """
 
     types = {
-        int : ('int', NS.xsdns),
-        float : ('float', NS.xsdns),
-        str : ('string', NS.xsdns),
-        Text : ('string', NS.xsdns),
-        bool : ('boolean', NS.xsdns),
-     }
+        int: ("int", NS.xsdns),
+        float: ("float", NS.xsdns),
+        str: ("string", NS.xsdns),
+        Text: ("string", NS.xsdns),
+        bool: ("boolean", NS.xsdns),
+    }
 
     @classmethod
     def auto(cls, node, value=None):
@@ -79,13 +79,13 @@ class Typer:
         @return: The specified node.
         @rtype: L{sax.element.Element}
         """
-        xta = ':'.join((NS.xsins[0], 'type'))
+        xta = ":".join((NS.xsins[0], "type"))
         node.addPrefix(NS.xsins[0], NS.xsins[1])
         if ns is None:
             node.set(xta, tval)
         else:
             ns = cls.genprefix(node, ns)
-            qname = ':'.join((ns[0], tval))
+            qname = ":".join((ns[0], tval))
             node.set(xta, qname)
             node.addPrefix(ns[0], ns[1])
         return node
@@ -101,11 +101,11 @@ class Typer:
         @return: The I{ns} with a new prefix.
         """
         for n in range(1, 1024):
-            p = 'ns%d' % n
+            p = "ns%d" % n
             u = node.resolvePrefix(p, default=None)
             if u is None or u == ns[1]:
                 return (p, ns[1])
-        raise Exception('auto prefix, exhausted')
+        raise Exception("auto prefix, exhausted")
 
     @classmethod
     def known(cls, object):

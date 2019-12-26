@@ -18,15 +18,14 @@ The plugin module provides suds plugin implementation classes.
 
 """
 
-from asyncsuds import *
-
 from logging import getLogger
+
+
 log = getLogger(__name__)
 
 
 class Context(object):
     """Plugin context."""
-    pass
 
 
 class InitContext(Context):
@@ -37,7 +36,6 @@ class InitContext(Context):
     @type wsdl: L{wsdl.Definitions}
 
     """
-    pass
 
 
 class DocumentContext(Context):
@@ -50,7 +48,6 @@ class DocumentContext(Context):
     @type document: (str|L{sax.element.Element})
 
     """
-    pass
 
 
 class MessageContext(Context):
@@ -63,12 +60,10 @@ class MessageContext(Context):
     @type reply: (str|L{sax.element.Element}|object)
 
     """
-    pass
 
 
 class Plugin:
     """Plugin base."""
-    pass
 
 
 class InitPlugin(Plugin):
@@ -85,7 +80,6 @@ class InitPlugin(Plugin):
         @type context: L{InitContext}
 
         """
-        pass
 
 
 class DocumentPlugin(Plugin):
@@ -102,7 +96,6 @@ class DocumentPlugin(Plugin):
         @type context: L{DocumentContext}
 
         """
-        pass
 
     def parsed(self, context):
         """
@@ -115,7 +108,6 @@ class DocumentPlugin(Plugin):
         @type context: L{DocumentContext}
 
         """
-        pass
 
 
 class MessagePlugin(Plugin):
@@ -133,7 +125,6 @@ class MessagePlugin(Plugin):
         @type context: L{MessageContext}
 
         """
-        pass
 
     def sending(self, context):
         """
@@ -147,7 +138,6 @@ class MessagePlugin(Plugin):
         @type context: L{MessageContext}
 
         """
-        pass
 
     def received(self, context):
         """
@@ -161,7 +151,6 @@ class MessagePlugin(Plugin):
         @type context: L{MessageContext}
 
         """
-        pass
 
     def parsed(self, context):
         """
@@ -175,7 +164,6 @@ class MessagePlugin(Plugin):
         @type context: L{MessageContext}
 
         """
-        pass
 
     def unmarshalled(self, context):
         """
@@ -189,7 +177,6 @@ class MessagePlugin(Plugin):
         @type context: L{MessageContext}
 
         """
-        pass
 
 
 class PluginContainer:
@@ -204,9 +191,10 @@ class PluginContainer:
     """
 
     domains = {
-        'init': (InitContext, InitPlugin),
-        'document': (DocumentContext, DocumentPlugin),
-        'message': (MessageContext, MessagePlugin)}
+        "init": (InitContext, InitPlugin),
+        "document": (DocumentContext, DocumentPlugin),
+        "message": (MessageContext, MessagePlugin),
+    }
 
     def __init__(self, plugins):
         """
@@ -219,7 +207,7 @@ class PluginContainer:
     def __getattr__(self, name):
         domain = self.domains.get(name)
         if not domain:
-            raise Exception('plugin domain (%s), invalid' % (name,))
+            raise Exception("plugin domain (%s), invalid" % (name,))
         ctx, pclass = domain
         plugins = [p for p in self.plugins if isinstance(p, pclass)]
         return PluginDomain(ctx, plugins)

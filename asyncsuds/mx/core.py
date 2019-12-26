@@ -18,14 +18,13 @@
 Provides I{marshaller} core classes.
 """
 
-from asyncsuds import *
-from asyncsuds.mx import *
+from logging import getLogger
+
 from asyncsuds.mx.appender import ContentAppender
-from asyncsuds.sax.element import Element
 from asyncsuds.sax.document import Document
+from asyncsuds.sax.element import Element
 from asyncsuds.sudsobject import Property
 
-from logging import getLogger
 log = getLogger(__name__)
 
 
@@ -49,13 +48,13 @@ class Core:
         @param content: The content to process.
         @type content: L{Object}
         """
-        log.debug('processing:\n%s', content)
+        log.debug("processing:\n%s", content)
         self.reset()
         if content.tag is None:
             content.tag = content.value.__class__.__name__
         document = Document()
         if isinstance(content.value, Property):
-            root = self.node(content)
+            self.node(content)
         self.append(document, content)
         return document.root()
 
@@ -67,7 +66,7 @@ class Core:
         @param content: The content to append.
         @type content: L{Object}
         """
-        log.debug('appending parent:\n%s\ncontent:\n%s', parent, content)
+        log.debug("appending parent:\n%s\ncontent:\n%s", parent, content)
         if self.start(content):
             self.appender.append(parent, content)
             self.end(parent, content)
@@ -76,7 +75,6 @@ class Core:
         """
         Reset the marshaller.
         """
-        pass
 
     def node(self, content):
         """
@@ -104,7 +102,6 @@ class Core:
         @param content: The content for which processing has been suspended.
         @type content: L{Content}
         """
-        pass
 
     def resume(self, content):
         """
@@ -112,7 +109,6 @@ class Core:
         @param content: The content for which processing has been resumed.
         @type content: L{Content}
         """
-        pass
 
     def end(self, parent, content):
         """
@@ -122,7 +118,6 @@ class Core:
         @param content: The content for which processing has ended.
         @type content: L{Content}
         """
-        pass
 
     def setnil(self, node, content):
         """
@@ -132,7 +127,6 @@ class Core:
         @param content: The content to set nil.
         @type content: L{Content}
         """
-        pass
 
     def setdefault(self, node, content):
         """
@@ -143,7 +137,6 @@ class Core:
         @type content: L{Content}
         @return: The default.
         """
-        pass
 
     def optional(self, content):
         """

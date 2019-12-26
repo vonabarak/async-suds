@@ -18,12 +18,13 @@
 The I{query} module defines a class for performing schema queries.
 """
 
+from logging import getLogger
+
 from asyncsuds import *
 from asyncsuds.sudsobject import *
-from asyncsuds.xsd import qualify, isqref
+from asyncsuds.xsd import isqref
 from asyncsuds.xsd.sxbuiltin import Factory
 
-from logging import getLogger
 log = getLogger(__name__)
 
 
@@ -32,6 +33,7 @@ class Query(Object):
     Schema query base class.
 
     """
+
     def __init__(self, ref=None):
         """
         @param ref: The schema reference being queried.
@@ -43,7 +45,7 @@ class Query(Object):
         self.history = []
         self.resolved = False
         if not isqref(self.ref):
-            raise Exception('%s, must be qref' % tostr(self.ref))
+            raise Exception("%s, must be qref" % tostr(self.ref))
 
     def execute(self, schema):
         """
@@ -54,7 +56,7 @@ class Query(Object):
         @return: The item matching the search criteria.
         @rtype: L{sxbase.SchemaObject}
         """
-        raise Exception('not-implemented by subclass')
+        raise Exception("not-implemented by subclass")
 
     def filter(self, result):
         """
@@ -66,9 +68,9 @@ class Query(Object):
         """
         if result is None:
             return True
-        reject = ( result in self.history )
+        reject = result in self.history
         if reject:
-            log.debug('result %s, rejected by\n%s', Repr(result), self)
+            log.debug("result %s, rejected by\n%s", Repr(result), self)
         return reject
 
     def result(self, result):
@@ -78,11 +80,11 @@ class Query(Object):
         @type result: L{sxbase.SchemaObject}
         """
         if result is None:
-            log.debug('%s, not-found', self.ref)
+            log.debug("%s, not-found", self.ref)
             return
         if self.resolved:
             result = result.resolve()
-        log.debug('%s, found as: %s', self.ref, Repr(result))
+        log.debug("%s, found as: %s", self.ref, Repr(result))
         self.history.append(result)
         return result
 
@@ -94,11 +96,12 @@ class BlindQuery(Query):
     on an Element first. This query will also find builtins.
 
     """
+
     def execute(self, schema):
         if schema.builtin(self.ref):
             name = self.ref[0]
             b = Factory.create(schema, name)
-            log.debug('%s, found builtin (%s)', self.id, name)
+            log.debug("%s, found builtin (%s)", self.id, name)
             return b
         result = None
         for d in (schema.elements, schema.types):
@@ -120,11 +123,12 @@ class TypeQuery(Query):
     schema. Matches on root types only.
 
     """
+
     def execute(self, schema):
         if schema.builtin(self.ref):
             name = self.ref[0]
             b = Factory.create(schema, name)
-            log.debug('%s, found builtin (%s)', self.id, name)
+            log.debug("%s, found builtin (%s)", self.id, name)
             return b
         result = schema.types.get(self.ref)
         if self.filter(result):
@@ -138,6 +142,7 @@ class GroupQuery(Query):
     schema.
 
     """
+
     def execute(self, schema):
         result = schema.groups.get(self.ref)
         if self.filter(result):
@@ -152,6 +157,7 @@ class AttrQuery(Query):
     the document.
 
     """
+
     def execute(self, schema):
         result = schema.attributes.get(self.ref)
         if self.filter(result):
@@ -160,6 +166,7 @@ class AttrQuery(Query):
 
     def __deepsearch(self, schema):
         from asyncsuds.xsd.sxbasic import Attribute
+
         result = None
         for e in schema.all:
             result = e.find(self.ref, (Attribute,))
@@ -176,6 +183,7 @@ class AttrGroupQuery(Query):
     specified schema.
 
     """
+
     def execute(self, schema):
         result = schema.agrps.get(self.ref)
         if self.filter(result):
@@ -190,6 +198,7 @@ class ElementQuery(Query):
     the document.
 
     """
+
     def execute(self, schema):
         result = schema.elements.get(self.ref)
         if self.filter(result):
@@ -198,6 +207,7 @@ class ElementQuery(Query):
 
     def __deepsearch(self, schema):
         from asyncsuds.xsd.sxbasic import Element
+
         result = None
         for e in schema.all:
             result = e.find(self.ref, (Element,))

@@ -18,29 +18,25 @@
 The I{wsse} module provides WS-Security.
 """
 
-from logging import getLogger
-from asyncsuds import *
-from asyncsuds.sudsobject import Object
-from asyncsuds.sax.element import Element
-from asyncsuds.sax.date import DateTime, UtcTimezone
-from datetime import datetime, timedelta
-
+from datetime import datetime
+from datetime import timedelta
 from hashlib import md5
 
+from asyncsuds.sax.date import DateTime
+from asyncsuds.sax.date import UtcTimezone
+from asyncsuds.sax.element import Element
+from asyncsuds.sudsobject import Object
 
-
-dsns = \
-    ('ds',
-     'http://www.w3.org/2000/09/xmldsig#')
-wssens = \
-    ('wsse',
-     'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd')
-wsuns = \
-    ('wsu',
-     'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd')
-wsencns = \
-    ('wsenc',
-     'http://www.w3.org/2001/04/xmlenc#')
+dsns = ("ds", "http://www.w3.org/2000/09/xmldsig#")
+wssens = (
+    "wsse",
+    "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd",
+)
+wsuns = (
+    "wsu",
+    "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd",
+)
+wsencns = ("wsenc", "http://www.w3.org/2001/04/xmlenc#")
 
 
 class Security(Object):
@@ -71,8 +67,8 @@ class Security(Object):
         @return: The root node.
         @rtype: L{Element}
         """
-        root = Element('Security', ns=wssens)
-        root.set('mustUnderstand', str(self.mustUnderstand).lower())
+        root = Element("Security", ns=wssens)
+        root.set("mustUnderstand", str(self.mustUnderstand).lower())
         for t in self.tokens:
             root.append(t.xml())
         return root
@@ -95,7 +91,7 @@ class Token(Object):
         return str(utc)
 
     def __init__(self):
-            Object.__init__(self)
+        Object.__init__(self)
 
 
 class UsernameToken(Token):
@@ -138,7 +134,7 @@ class UsernameToken(Token):
             s.append(self.password)
             s.append(Token.sysdate())
             m = md5()
-            m.update(':'.join(s))
+            m.update(":".join(s))
             self.nonce = m.hexdigest()
         else:
             self.nonce = text
@@ -155,26 +151,25 @@ class UsernameToken(Token):
         else:
             self.created = dt
 
-
     def xml(self):
         """
         Get xml representation of the object.
         @return: The root node.
         @rtype: L{Element}
         """
-        root = Element('UsernameToken', ns=wssens)
-        u = Element('Username', ns=wssens)
+        root = Element("UsernameToken", ns=wssens)
+        u = Element("Username", ns=wssens)
         u.setText(self.username)
         root.append(u)
-        p = Element('Password', ns=wssens)
+        p = Element("Password", ns=wssens)
         p.setText(self.password)
         root.append(p)
         if self.nonce is not None:
-            n = Element('Nonce', ns=wssens)
+            n = Element("Nonce", ns=wssens)
             n.setText(self.nonce)
             root.append(n)
         if self.created is not None:
-            n = Element('Created', ns=wsuns)
+            n = Element("Created", ns=wsuns)
             n.setText(str(DateTime(self.created)))
             root.append(n)
         return root
@@ -200,9 +195,9 @@ class Timestamp(Token):
 
     def xml(self):
         root = Element("Timestamp", ns=wsuns)
-        created = Element('Created', ns=wsuns)
+        created = Element("Created", ns=wsuns)
         created.setText(str(DateTime(self.created)))
-        expires = Element('Expires', ns=wsuns)
+        expires = Element("Expires", ns=wsuns)
         expires.setText(str(DateTime(self.expires)))
         root.append(created)
         root.append(expires)

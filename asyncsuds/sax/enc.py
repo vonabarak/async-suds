@@ -39,13 +39,15 @@ class Encoder:
         ("<", "&lt;"),
         (">", "&gt;"),
         ('"', "&quot;"),
-        ("'", "&apos;"))
+        ("'", "&apos;"),
+    )
     decodings = (
         ("&lt;", "<"),
         ("&gt;", ">"),
         ("&quot;", '"'),
         ("&apos;", "'"),
-        ("&amp;", "&"))
+        ("&amp;", "&"),
+    )
     special = ("&", "<", ">", '"', "'")
 
     def encode(self, s):

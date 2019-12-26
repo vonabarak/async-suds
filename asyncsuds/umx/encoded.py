@@ -19,16 +19,15 @@ Provides soap encoded unmarshaller classes.
 """
 
 from asyncsuds import *
+from asyncsuds.sax import Namespace
 from asyncsuds.umx import *
 from asyncsuds.umx.typed import Typed
-from asyncsuds.sax import Namespace
-
 
 #
 # Add encoded extensions
 # aty = The soap (section 5) encoded array type.
 #
-Content.extensions.append('aty')
+Content.extensions.append("aty")
 
 
 class Encoded(Typed):
@@ -73,17 +72,17 @@ class Encoded(Typed):
         @return: self
         @rtype: L{Encoded}
         """
-        name = 'arrayType'
-        ns = (None, 'http://schemas.xmlsoap.org/soap/encoding/')
+        name = "arrayType"
+        ns = (None, "http://schemas.xmlsoap.org/soap/encoding/")
         aty = content.node.get(name, ns)
         if aty is not None:
             content.aty = aty
-            parts = aty.split('[')
+            parts = aty.split("[")
             ref = parts[0]
             if len(parts) == 2:
                 self.applyaty(content, ref)
             else:
-                pass # (2) dimensional array
+                pass  # (2) dimensional array
         return self
 
     def applyaty(self, content, xty):
@@ -99,14 +98,14 @@ class Encoded(Typed):
         @return: self
         @rtype: L{Encoded}
         """
-        name = 'type'
+        name = "type"
         ns = Namespace.xsins
         parent = content.node
         for child in parent.getChildren():
             ref = child.get(name, ns)
             if ref is None:
                 parent.addPrefix(ns[0], ns[1])
-                attr = ':'.join((ns[0], name))
+                attr = ":".join((ns[0], name))
                 child.set(attr, xty)
         return self
 
@@ -119,7 +118,7 @@ class Encoded(Typed):
         @param content: An array content.
         @type content: L{Content}
         """
-        for n,v in content.data:
+        for n, v in content.data:
             if isinstance(v, list):
                 content.data = v
                 return

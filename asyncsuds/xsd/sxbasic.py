@@ -15,6 +15,9 @@
 
 """Classes representing I{basic} XSD schema objects."""
 
+from logging import getLogger
+from urllib.parse import urljoin
+
 from asyncsuds import *
 from asyncsuds.reader import DocumentReader
 from asyncsuds.sax import Namespace
@@ -23,14 +26,12 @@ from asyncsuds.xsd import *
 from asyncsuds.xsd.query import *
 from asyncsuds.xsd.sxbase import *
 
-from urllib.parse import urljoin
-
-from logging import getLogger
 log = getLogger(__name__)
 
 
 class RestrictionMatcher:
     """For use with L{NodeFinder} to match restriction."""
+
     def match(self, n):
         return isinstance(n, Restriction)
 
@@ -123,8 +124,17 @@ class Complex(SchemaObject):
     """
 
     def childtags(self):
-        return ("all", "any", "attribute", "attributeGroup", "choice",
-            "complexContent", "group", "sequence", "simpleContent")
+        return (
+            "all",
+            "any",
+            "attribute",
+            "attributeGroup",
+            "choice",
+            "complexContent",
+            "group",
+            "sequence",
+            "simpleContent",
+        )
 
     def description(self):
         return ("name",)
@@ -297,18 +307,21 @@ class Collection(SchemaObject):
 
 class All(Collection):
     """Represents an XSD schema <xsd:all/> node."""
+
     def all(self):
         return True
 
 
 class Choice(Collection):
     """Represents an XSD schema <xsd:choice/> node."""
+
     def choice(self):
         return True
 
 
 class Sequence(Collection):
     """Represents an XSD schema <xsd:sequence/> node."""
+
     def sequence(self):
         return True
 
@@ -380,10 +393,10 @@ class Element(TypedContent):
         else:
             form = root.get("form")
             if form is not None:
-                self.form_qualified = (form == "qualified")
+                self.form_qualified = form == "qualified"
         nillable = self.root.get("nillable")
         if nillable is not None:
-            self.nillable = (nillable in ("1", "true"))
+            self.nillable = nillable in ("1", "true")
         self.implany()
 
     def implany(self):
@@ -478,8 +491,7 @@ class Extension(SchemaObject):
         self.ref = root.get("base")
 
     def childtags(self):
-        return ("all", "attribute", "attributeGroup", "choice", "group",
-            "sequence")
+        return ("all", "attribute", "attributeGroup", "choice", "group", "sequence")
 
     def dependencies(self):
         deps = []
@@ -563,8 +575,9 @@ class Import(SchemaObject):
         if self.opened:
             return
         self.opened = True
-        log.debug("%s, importing ns='%s', location='%s'", self.id, self.ns[1],
-            self.location)
+        log.debug(
+            "%s, importing ns='%s', location='%s'", self.id, self.ns[1], self.location
+        )
         result = self.locate()
         if result is None:
             if self.location is None:
@@ -848,10 +861,7 @@ class Factory:
 #######################################################
 Import.bind(
     "http://schemas.xmlsoap.org/soap/encoding/",
-    "suds://schemas.xmlsoap.org/soap/encoding/")
-Import.bind(
-    "http://www.w3.org/XML/1998/namespace",
-    "http://www.w3.org/2001/xml.xsd")
-Import.bind(
-    "http://www.w3.org/2001/XMLSchema",
-    "http://www.w3.org/2001/XMLSchema.xsd")
+    "suds://schemas.xmlsoap.org/soap/encoding/",
+)
+Import.bind("http://www.w3.org/XML/1998/namespace", "http://www.w3.org/2001/xml.xsd")
+Import.bind("http://www.w3.org/2001/XMLSchema", "http://www.w3.org/2001/XMLSchema.xsd")

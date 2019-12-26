@@ -18,7 +18,6 @@
 Contains XML text classes.
 """
 
-from asyncsuds import *
 from asyncsuds import sax
 
 
@@ -30,7 +29,8 @@ class Text(str):
     @ivar escaped: The (optional) XML special character escaped flag.
     @type escaped: bool
     """
-    __slots__ = ('lang', 'escaped')
+
+    __slots__ = ("lang", "escaped")
 
     @classmethod
     def __valid(cls, *args):
@@ -38,8 +38,8 @@ class Text(str):
 
     def __new__(cls, *args, **kwargs):
         if cls.__valid(*args):
-            lang = kwargs.pop('lang', None)
-            escaped = kwargs.pop('escaped', False)
+            lang = kwargs.pop("lang", None)
+            escaped = kwargs.pop("escaped", False)
             result = super(Text, cls).__new__(cls, *args, **kwargs)
             result.lang = lang
             result.escaped = escaped
@@ -55,7 +55,7 @@ class Text(str):
         """
         if not self.escaped:
             post = sax.encoder.encode(self)
-            escaped = ( post != self )
+            escaped = post != self
             return Text(post, lang=self.lang, escaped=escaped)
         return self
 
@@ -75,7 +75,7 @@ class Text(str):
         return Text(post, lang=self.lang, escaped=self.escaped)
 
     def __add__(self, other):
-        joined = u''.join((self, other))
+        joined = u"".join((self, other))
         result = Text(joined, lang=self.lang, escaped=self.escaped)
         if isinstance(other, Text):
             result.escaped = self.escaped or other.escaped
@@ -84,10 +84,10 @@ class Text(str):
     def __repr__(self):
         s = [self]
         if self.lang is not None:
-            s.append(' [%s]' % self.lang)
+            s.append(" [%s]" % self.lang)
         if self.escaped:
-            s.append(' <escaped>')
-        return ''.join(s)
+            s.append(" <escaped>")
+        return "".join(s)
 
     def __getstate__(self):
         state = {}
@@ -105,6 +105,7 @@ class Raw(Text):
     Raw text which is not XML escaped.
     This may include I{string} XML.
     """
+
     def escape(self):
         return self
 
@@ -112,5 +113,5 @@ class Raw(Text):
         return self
 
     def __add__(self, other):
-        joined = u''.join((self, other))
+        joined = u"".join((self, other))
         return Raw(joined, lang=self.lang)

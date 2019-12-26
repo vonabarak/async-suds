@@ -19,14 +19,16 @@ The I{resolver} module provides a collection of classes that
 provide wsdl/xsd named type resolution.
 """
 
-from asyncsuds import *
-from asyncsuds.sax import splitPrefix, Namespace
-from asyncsuds.sudsobject import Object
-from asyncsuds.xsd.query import BlindQuery, TypeQuery, qualify
-
 import re
-
 from logging import getLogger
+
+from asyncsuds import *
+from asyncsuds.sax import Namespace
+from asyncsuds.sax import splitPrefix
+from asyncsuds.sudsobject import Object
+from asyncsuds.xsd.query import BlindQuery
+from asyncsuds.xsd.query import qualify
+
 log = getLogger(__name__)
 
 
@@ -55,14 +57,14 @@ class Resolver:
         @return: The found schema I{type}
         @rtype: L{xsd.sxbase.SchemaObject}
         """
-        log.debug('searching schema for (%s)', name)
+        log.debug("searching schema for (%s)", name)
         qref = qualify(name, self.schema.root, self.schema.tns)
         query = BlindQuery(qref)
         result = query.execute(self.schema)
         if result is None:
-            log.error('(%s) not-found', name)
+            log.error("(%s) not-found", name)
             return None
-        log.debug('found (%s) as (%s)', name, Repr(result))
+        log.debug("found (%s) as (%s)", name, Repr(result))
         if resolved:
             result = result.resolve()
         return result
@@ -76,7 +78,7 @@ class PathResolver(Resolver):
     @type wsdl: L{wsdl.Definitions}
     """
 
-    def __init__(self, wsdl, ps='.'):
+    def __init__(self, wsdl, ps="."):
         """
         @param wsdl: A schema object.
         @type wsdl: L{wsdl.Definitions}
@@ -85,8 +87,8 @@ class PathResolver(Resolver):
         """
         Resolver.__init__(self, wsdl.schema)
         self.wsdl = wsdl
-        self.altp = re.compile('({)(.+)(})(.+)')
-        self.splitp = re.compile('({.+})*[^%s]+' % ps[0])
+        self.altp = re.compile("({)(.+)(})(.+)")
+        self.splitp = re.compile("({.+})*[^%s]+" % ps[0])
 
     def find(self, path, resolved=True):
         """
@@ -126,14 +128,14 @@ class PathResolver(Resolver):
         """
         result = None
         name = parts[0]
-        log.debug('searching schema for (%s)', name)
+        log.debug("searching schema for (%s)", name)
         qref = self.qualify(parts[0])
         query = BlindQuery(qref)
         result = query.execute(self.schema)
         if result is None:
-            log.error('(%s) not-found', name)
+            log.error("(%s) not-found", name)
             raise PathResolver.BadPath(name)
-        log.debug('found (%s) as (%s)', name, Repr(result))
+        log.debug("found (%s) as (%s)", name, Repr(result))
         return result
 
     def branch(self, root, parts):
@@ -149,13 +151,13 @@ class PathResolver(Resolver):
         result = root
         for part in parts[1:-1]:
             name = splitPrefix(part)[1]
-            log.debug('searching parent (%s) for (%s)', Repr(result), name)
+            log.debug("searching parent (%s) for (%s)", Repr(result), name)
             result, ancestry = result.get_child(name)
             if result is None:
-                log.error('(%s) not-found', name)
+                log.error("(%s) not-found", name)
                 raise PathResolver.BadPath(name)
             result = result.resolve(nobuiltin=True)
-            log.debug('found (%s) as (%s)', name, Repr(result))
+            log.debug("found (%s) as (%s)", name, Repr(result))
         return result
 
     def leaf(self, parent, parts):
@@ -169,7 +171,7 @@ class PathResolver(Resolver):
         @rtype: L{xsd.sxbase.SchemaObject}
         """
         name = splitPrefix(parts[-1])[1]
-        if name.startswith('@'):
+        if name.startswith("@"):
             result, path = parent.get_attribute(name[1:])
         else:
             result, ancestry = parent.get_child(name)
@@ -209,12 +211,13 @@ class PathResolver(Resolver):
             m = self.splitp.match(s, b)
             if m is None:
                 break
-            b,e = m.span()
+            b, e = m.span()
             parts.append(s[b:e])
-            b = e+1
+            b = e + 1
         return parts
 
-    class BadPath(Exception): pass
+    class BadPath(Exception):
+        pass
 
 
 class TreeResolver(Resolver):
@@ -254,7 +257,7 @@ class TreeResolver(Resolver):
         else:
             frame = Frame(x)
         self.stack.append(frame)
-        log.debug('push: (%s)\n%s', Repr(frame), Repr(self.stack))
+        log.debug("push: (%s)\n%s", Repr(frame), Repr(self.stack))
         return frame
 
     def top(self):
@@ -276,9 +279,9 @@ class TreeResolver(Resolver):
         """
         if len(self.stack):
             popped = self.stack.pop()
-            log.debug('pop: (%s)\n%s', Repr(popped), Repr(self.stack))
+            log.debug("pop: (%s)\n%s", Repr(popped), Repr(self.stack))
             return popped
-        log.debug('stack empty, not-popped')
+        log.debug("stack empty, not-popped")
         return None
 
     def depth(self):
@@ -291,8 +294,8 @@ class TreeResolver(Resolver):
 
     def getchild(self, name, parent):
         """Get a child by name."""
-        log.debug('searching parent (%s) for (%s)', Repr(parent), name)
-        if name.startswith('@'):
+        log.debug("searching parent (%s) for (%s)", Repr(parent), name)
+        if name.startswith("@"):
             return parent.get_attribute(name[1:])
         return parent.get_child(name)
 
@@ -337,7 +340,7 @@ class NodeResolver(TreeResolver):
             return result
         if push:
             frame = Frame(result, resolved=known, ancestry=ancestry)
-            pushed = self.push(frame)
+            self.push(frame)
         if resolved:
             result = result.resolve()
         return result
@@ -353,7 +356,7 @@ class NodeResolver(TreeResolver):
         @return: The found schema I{type}
         @rtype: L{xsd.sxbase.SchemaObject}
         """
-        name = '@%s'%name
+        name = "@%s" % name
         parent = self.top().resolved
         if parent is None:
             result, ancestry = self.query(name, self.node)
@@ -367,7 +370,7 @@ class NodeResolver(TreeResolver):
 
     def query(self, name, node):
         """Blindly query the schema by name."""
-        log.debug('searching schema for (%s)', name)
+        log.debug("searching schema for (%s)", name)
         qref = qualify(name, node, node.namespace())
         query = BlindQuery(qref)
         result = query.execute(self.schema)
@@ -375,7 +378,7 @@ class NodeResolver(TreeResolver):
 
     def known(self, node):
         """Resolve type referenced by @xsi:type."""
-        ref = node.get('type', Namespace.xsins)
+        ref = node.get("type", Namespace.xsins)
         if ref is None:
             return None
         qref = qualify(ref, node, node.namespace())
@@ -425,7 +428,7 @@ class GraphResolver(TreeResolver):
             known = self.known(object)
         if push:
             frame = Frame(result, resolved=known, ancestry=ancestry)
-            pushed = self.push(frame)
+            self.push(frame)
         if resolved:
             if known is None:
                 result = result.resolve()
@@ -435,7 +438,7 @@ class GraphResolver(TreeResolver):
 
     def query(self, name):
         """Blindly query the schema by name."""
-        log.debug('searching schema for (%s)', name)
+        log.debug("searching schema for (%s)", name)
         schema = self.schema
         wsdl = self.wsdl()
         if wsdl is None:
@@ -473,14 +476,15 @@ class Frame:
         self.ancestry = ancestry
 
     def __str__(self):
-        return '%s\n%s\n%s' % \
-            (Repr(self.type),
+        return "%s\n%s\n%s" % (
+            Repr(self.type),
             Repr(self.resolved),
-            [Repr(t) for t in self.ancestry])
+            [Repr(t) for t in self.ancestry],
+        )
 
     class Empty:
         def __getattr__(self, name):
-            if name == 'ancestry':
+            if name == "ancestry":
                 return ()
             else:
                 return None
@@ -491,4 +495,4 @@ class Stack(list):
         result = []
         for item in self:
             result.append(repr(item))
-        return '\n'.join(result)
+        return "\n".join(result)

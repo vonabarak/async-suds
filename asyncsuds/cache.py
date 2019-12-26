@@ -18,20 +18,22 @@ Basic caching classes.
 
 """
 
+import datetime
+import os
+import shutil
+import tempfile
+from logging import getLogger
+
 import asyncsuds
 import asyncsuds.sax.element
 import asyncsuds.sax.parser
 
-import datetime
-import os
 try:
     import cPickle as pickle
 except Exception:
     import pickle
-import shutil
-import tempfile
 
-from logging import getLogger
+
 log = getLogger(__name__)
 
 
@@ -102,6 +104,7 @@ class FileCache(Cache):
     @type location: str
 
     """
+
     fnprefix = "suds"
     __default_location = None
     remove_default_location_on_exit = True
@@ -225,6 +228,7 @@ class FileCache(Cache):
             tmp = tempfile.mkdtemp("suds-default-cache")
             FileCache.__default_location = tmp
             import atexit
+
             atexit.register(FileCache.__remove_default_location)
         return FileCache.__default_location
 
@@ -296,8 +300,9 @@ class DocumentCache(FileCache):
             self.purge(id)
 
     def put(self, id, object):
-        if isinstance(object,
-                (asyncsuds.sax.document.Document, asyncsuds.sax.element.Element)):
+        if isinstance(
+            object, (asyncsuds.sax.document.Document, asyncsuds.sax.element.Element)
+        ):
             super(DocumentCache, self).put(id, asyncsuds.byte_str(str(object)))
         return object
 
@@ -310,6 +315,7 @@ class ObjectCache(FileCache):
     @type protocol: int
 
     """
+
     protocol = 2
 
     def fnsuffix(self):

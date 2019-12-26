@@ -18,12 +18,11 @@ Classes for the (WS) SOAP I{rpc/literal} and I{rpc/encoded} bindings.
 
 """
 
-from asyncsuds import *
+from asyncsuds.bindings.binding import Binding
+from asyncsuds.bindings.binding import envns
 from asyncsuds.mx.encoded import Encoded as MxEncoded
-from asyncsuds.umx.encoded import Encoded as UmxEncoded
-from asyncsuds.bindings.binding import Binding, envns
 from asyncsuds.sax.element import Element
-
+from asyncsuds.umx.encoded import Encoded as UmxEncoded
 
 encns = ("SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/")
 
@@ -70,7 +69,7 @@ class RPC(Binding):
         """
         ns = method.soap.input.body.namespace
         if ns[0] is None:
-            ns = ('ns0', ns[1])
+            ns = ("ns0", ns[1])
         return Element(method.name, ns=ns)
 
 

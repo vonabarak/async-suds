@@ -25,6 +25,7 @@ class AutoLinker(object):
     management between a L{Properties} object and the L{Properties}
     contained within I{values}.
     """
+
     def updated(self, properties, prev, next):
         """
         Notification that a values was updated and the linkage
@@ -32,7 +33,6 @@ class AutoLinker(object):
         be relinked to the L{Properties} contained within the
         I{next} value.
         """
-        pass
 
 
 class Link(object):
@@ -41,6 +41,7 @@ class Link(object):
     @ivar endpoints: A tuple of the (2) endpoints of the link.
     @type endpoints: tuple(2)
     """
+
     def __init__(self, a, b):
         """
         @param a: Property (A) to link.
@@ -65,9 +66,8 @@ class Link(object):
         @return: self
         @rtype: L{Link}
         """
-        if pA in pB.links or \
-           pB in pA.links:
-            raise Exception('Already linked')
+        if pA in pB.links or pB in pA.links:
+            raise Exception("Already linked")
         dA = pA.domains()
         dB = pB.domains()
         for d in dA:
@@ -80,10 +80,10 @@ class Link(object):
         kB = pB.keys()
         for k in kA:
             if k in kB:
-                raise Exception('Duplicate key %s found' % k)
+                raise Exception("Duplicate key %s found" % k)
         for k in kB:
             if k in kA:
-                raise Exception('Duplicate key %s found' % k)
+                raise Exception("Duplicate key %s found" % k)
         return self
 
     def teardown(self):
@@ -109,6 +109,7 @@ class Endpoint(object):
     @ivar target: The properties object.
     @type target: L{Property}
     """
+
     def __init__(self, link, target):
         self.link = link
         self.target = target
@@ -117,7 +118,7 @@ class Endpoint(object):
         return self.link.teardown()
 
     def __eq__(self, rhs):
-        return ( self.target == rhs )
+        return self.target == rhs
 
     def __hash__(self):
         return hash(self.target)
@@ -136,6 +137,7 @@ class Definition:
     @ivar default: The default value.
     @ivar type: any
     """
+
     def __init__(self, name, classes, default, linker=AutoLinker()):
         """
         @param name: The property name.
@@ -174,23 +176,21 @@ class Definition:
         """
         if value is None:
             return
-        if len(self.classes) and \
-            not isinstance(value, self.classes):
-                msg = '"%s" must be: %s' % (self.name, self.classes)
-                raise AttributeError(msg)
-
+        if len(self.classes) and not isinstance(value, self.classes):
+            msg = '"%s" must be: %s' % (self.name, self.classes)
+            raise AttributeError(msg)
 
     def __repr__(self):
-        return '%s: %s' % (self.name, str(self))
+        return "%s: %s" % (self.name, str(self))
 
     def __str__(self):
         s = []
         if len(self.classes):
-            s.append('classes=%s' % str(self.classes))
+            s.append("classes=%s" % str(self.classes))
         else:
-            s.append('classes=*')
+            s.append("classes=*")
         s.append("default=%s" % str(self.default))
-        return ', '.join(s)
+        return ", ".join(s)
 
 
 class Properties:
@@ -208,6 +208,7 @@ class Properties:
     @ivar defined: A dict of property values.
     @type defined: dict
     """
+
     def __init__(self, domain, definitions, kwargs):
         """
         @param domain: The property domain name.
@@ -251,7 +252,7 @@ class Properties:
         """
         if isinstance(other, Properties):
             other = other.defined
-        for n,v in other.items():
+        for n, v in other.items():
             self.set(n, v)
         return self
 
@@ -433,19 +434,19 @@ class Properties:
 
     def str(self, history):
         s = []
-        s.append('Definitions:')
+        s.append("Definitions:")
         for d in self.definitions.values():
-            s.append('\t%s' % repr(d))
-        s.append('Content:')
+            s.append("\t%s" % repr(d))
+        s.append("Content:")
         for d in self.defined.items():
-            s.append('\t%s' % str(d))
+            s.append("\t%s" % str(d))
         if self not in history:
             history.append(self)
-            s.append('Linked:')
+            s.append("Linked:")
             for x in self.links:
                 s.append(x.str(history))
             history.remove(self)
-        return '\n'.join(s)
+        return "\n".join(s)
 
     def __repr__(self):
         return str(self)
@@ -460,11 +461,12 @@ class Skin(object):
     @ivar __pts__: The wrapped object.
     @type __pts__: L{Properties}.
     """
+
     def __init__(self, domain, definitions, kwargs):
         self.__pts__ = Properties(domain, definitions, kwargs)
 
     def __setattr__(self, name, value):
-        builtin = name.startswith('__') and name.endswith('__')
+        builtin = name.startswith("__") and name.endswith("__")
         if builtin:
             self.__dict__[name] = value
             return
@@ -489,6 +491,7 @@ class Inspector:
     """
     Wrapper inspector.
     """
+
     def __init__(self, options):
         self.properties = options.__pts__
 

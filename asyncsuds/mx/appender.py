@@ -20,10 +20,11 @@ Provides appender classes for I{marshalling}.
 
 from asyncsuds import *
 from asyncsuds.mx import *
-from asyncsuds.sudsobject import footprint
-from asyncsuds.sudsobject import Object, Property
 from asyncsuds.sax.element import Element
 from asyncsuds.sax.text import Text
+from asyncsuds.sudsobject import Object
+from asyncsuds.sudsobject import Property
+from asyncsuds.sudsobject import footprint
 
 
 class Matcher:
@@ -70,7 +71,8 @@ class ContentAppender:
             (Matcher(Text), TextAppender(marshaller)),
             (Matcher(list), ListAppender(marshaller)),
             (Matcher(tuple), ListAppender(marshaller)),
-            (Matcher(dict), DictAppender(marshaller)))
+            (Matcher(dict), DictAppender(marshaller)),
+        )
 
     def append(self, parent, content):
         """
@@ -100,7 +102,7 @@ class Appender:
         @param marshaller: A marshaller.
         @type marshaller: L{suds.mx.core.Core}
         """
-        self.marshaller  = marshaller
+        self.marshaller = marshaller
 
     def node(self, content):
         """
@@ -174,7 +176,7 @@ class PrimitiveAppender(Appender):
     """
 
     def append(self, parent, content):
-        if content.tag.startswith('_'):
+        if content.tag.startswith("_"):
             attr = content.tag[1:]
             value = tostr(content.value)
             if value:
@@ -264,8 +266,8 @@ class ElementAppender(Appender):
     """
 
     def append(self, parent, content):
-        if content.tag.startswith('_'):
-            raise Exception('raw XML not valid as attribute value')
+        if content.tag.startswith("_"):
+            raise Exception("raw XML not valid as attribute value")
         child = ElementWrapper(content.value)
         parent.append(child)
 
@@ -291,7 +293,7 @@ class TextAppender(Appender):
     """
 
     def append(self, parent, content):
-        if content.tag.startswith('_'):
+        if content.tag.startswith("_"):
             attr = content.tag[1:]
             value = tostr(content.value)
             if value:

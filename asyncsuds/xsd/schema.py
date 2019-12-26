@@ -22,17 +22,17 @@ and targeted denormalization.
 
 """
 
+from logging import getLogger
+
 from asyncsuds import *
+from asyncsuds.sax import Namespace
+from asyncsuds.sax import splitPrefix
+from asyncsuds.sax.element import Element
 from asyncsuds.xsd import *
 from asyncsuds.xsd.depsort import dependency_sort
-from asyncsuds.xsd.sxbuiltin import *
-from asyncsuds.xsd.sxbase import SchemaObject
 from asyncsuds.xsd.sxbasic import Factory as BasicFactory
-from asyncsuds.xsd.sxbuiltin import Factory as BuiltinFactory
-from asyncsuds.sax import splitPrefix, Namespace
-from asyncsuds.sax.element import Element
+from asyncsuds.xsd.sxbuiltin import *
 
-from logging import getLogger
 log = getLogger(__name__)
 
 

@@ -19,9 +19,8 @@ Classes modeling transport options.
 """
 
 
-from asyncsuds.transport import *
 from asyncsuds.properties import *
-from asyncio import BaseEventLoop
+from asyncsuds.transport import *
 
 
 class Options(Skin):
@@ -51,10 +50,10 @@ class Options(Skin):
     def __init__(self, **kwargs):
         domain = __name__
         definitions = [
-            Definition('proxy', dict, {}),
-            Definition('timeout', (int,float), 90),
-            Definition('headers', dict, {}),
-            Definition('username', str, None),
-            Definition('password', str, None),
-            Definition('verify_ssl', (bool,), True)]
+            Definition("proxy", dict, {}),
+            Definition("timeout", (int, float), 90),
+            Definition("headers", dict, {}),
+            Definition("username", str, None),
+            Definition("password", str, None),
+        ]
         Skin.__init__(self, domain, definitions, kwargs)

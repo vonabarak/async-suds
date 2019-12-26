@@ -45,8 +45,8 @@ def splitPrefix(name):
     @return: A tuple containing the (2) parts of I{name}
     @rtype: (I{prefix}, I{name})
     """
-    if isinstance(name, str) and ':' in name:
-        return tuple(name.split(':', 1))
+    if isinstance(name, str) and ":" in name:
+        return tuple(name.split(":", 1))
     return None, name
 
 
@@ -56,9 +56,9 @@ class Namespace:
     """
 
     default = (None, None)
-    xmlns = ('xml', 'http://www.w3.org/XML/1998/namespace')
-    xsdns = ('xs', 'http://www.w3.org/2001/XMLSchema')
-    xsins = ('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+    xmlns = ("xml", "http://www.w3.org/XML/1998/namespace")
+    xsdns = ("xs", "http://www.w3.org/2001/XMLSchema")
+    xsins = ("xsi", "http://www.w3.org/2001/XMLSchema-instance")
     all = (xsdns, xsins)
 
     @classmethod
@@ -72,7 +72,7 @@ class Namespace:
     @classmethod
     def xsd(cls, ns):
         try:
-            return cls.w3(ns) and ns[1].endswith('XMLSchema')
+            return cls.w3(ns) and ns[1].endswith("XMLSchema")
         except Exception:
             pass
         return False
@@ -80,7 +80,7 @@ class Namespace:
     @classmethod
     def xsi(cls, ns):
         try:
-            return cls.w3(ns) and ns[1].endswith('XMLSchema-instance')
+            return cls.w3(ns) and ns[1].endswith("XMLSchema-instance")
         except Exception:
             pass
         return False
@@ -92,7 +92,7 @@ class Namespace:
     @classmethod
     def w3(cls, ns):
         try:
-            return ns[1].startswith('http://www.w3.org')
+            return ns[1].startswith("http://www.w3.org")
         except Exception:
             pass
         return False

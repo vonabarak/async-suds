@@ -20,7 +20,6 @@ The service proxy provides access to web services.
 Replaced by: L{client.Client}
 """
 
-from asyncsuds import *
 from asyncsuds.client import Client
 
 
@@ -73,7 +72,7 @@ class ServiceProxy(object):
         return str(self.__client__)
 
     def __getattr__(self, name):
-        builtin = name.startswith('__') and name.endswith('__')
+        builtin = name.startswith("__") and name.endswith("__")
         if builtin:
             return self.__dict__[name]
         else:

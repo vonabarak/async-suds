@@ -15,12 +15,13 @@
 
 """I{Base} classes representing XSD schema objects."""
 
-from asyncsuds import *
-from asyncsuds.xsd import *
-from asyncsuds.sax.element import Element
-from asyncsuds.sax import Namespace
-
 from logging import getLogger
+
+from asyncsuds import *
+from asyncsuds.sax import Namespace
+from asyncsuds.sax.element import Element
+from asyncsuds.xsd import *
+
 log = getLogger(__name__)
 
 
@@ -436,8 +437,7 @@ class SchemaObject(object):
     def merge(self, other):
         """Merge another object as needed."""
         other.qualify()
-        for n in ("default", "max", "min", "name", "nillable", "qname",
-                "type"):
+        for n in ("default", "max", "min", "name", "nillable", "qname", "type"):
             if getattr(self, n) is not None:
                 continue
             v = getattr(other, n)
@@ -501,7 +501,7 @@ class SchemaObject(object):
             result.append(">")
             for c in self.rawchildren:
                 result.append("\n")
-                result.append(c.str(indent+1, history[:]))
+                result.append(c.str(indent + 1, history[:]))
                 if c.isattr():
                     result.append("@")
             result.append("\n%s" % (tab,))
@@ -687,7 +687,6 @@ class XBuiltin(SchemaObject):
 
 class Content(SchemaObject):
     """XSD schema objects representing real XML document content."""
-    pass
 
 
 class NodeFinder:
@@ -702,6 +701,7 @@ class NodeFinder:
     @type limit: int
 
     """
+
     def __init__(self, matcher, limit=0):
         """
         @param matcher: An object used as criteria for match.

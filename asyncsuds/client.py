@@ -18,32 +18,33 @@ Service proxy implementation providing access to web services.
 
 """
 
+import asyncio
+import http.client
+from copy import deepcopy
+from http.cookiejar import CookieJar
+from logging import getLogger
+from urllib.parse import unquote
+from urllib.parse import urlparse
+
 import asyncsuds
-from asyncsuds import *
 import asyncsuds.bindings.binding
-from asyncsuds.builder import Builder
 import asyncsuds.cache
 import asyncsuds.metrics as metrics
+import asyncsuds.sax.parser
+import asyncsuds.transport
+import asyncsuds.transport.http_transport
+from asyncsuds import *
+from asyncsuds import sudsobject
+from asyncsuds.builder import Builder
 from asyncsuds.options import Options
 from asyncsuds.plugin import PluginContainer
 from asyncsuds.properties import Unskin
 from asyncsuds.reader import DefinitionsReader
 from asyncsuds.resolver import PathResolver
-from asyncsuds.sax.document import Document
-import asyncsuds.sax.parser
 from asyncsuds.servicedefinition import ServiceDefinition
-import asyncsuds.transport
-import asyncsuds.transport.https
 from asyncsuds.umx.basic import Basic as UmxBasic
 from asyncsuds.wsdl import Definitions
-from asyncsuds import sudsobject
 
-from http.cookiejar import CookieJar
-from copy import deepcopy
-import http.client
-import asyncio
-
-from logging import getLogger
 log = getLogger(__name__)
 
 
@@ -103,7 +104,7 @@ class Client(object):
         """
         return sobject.__metadata__
 
-    def __init__(self, url, verify_ssl=True, proxy=None , loop=None, **kwargs):
+    def __init__(self, url, verify_ssl=True, proxy=None, **kwargs):
         """
         @param url: The URL for the WSDL.
         @type url: str
@@ -111,18 +112,23 @@ class Client(object):
         @see: L{Options}
 
         """
-        loop = loop or asyncio.get_event_loop()
+        u = urlparse(url)
+        username = unquote(u.username) if u.username else ""
+        password = unquote(u.password) if u.password else ""
+        port_string = f":{u.port}" if u.port else ""
+        query_string = f"?{u.query}" if u.query else ""
+        self.url = f"{u.scheme}://{u.hostname}:{port_string}{u.path}?{query_string}"
         options = Options()
-        options.transport = asyncsuds.transport.https.HttpAuthenticated()
+        options.transport = asyncsuds.transport.http_transport.HttpAuthenticated(
+            username=username, password=password
+        )
         self.options = options
         if "cache" not in kwargs:
             kwargs["cache"] = asyncsuds.cache.ObjectCache(days=1)
-        self.headers = kwargs.get('headers')
-        self.set_options(**kwargs, loop=loop)
-        self.url = url
+        self.headers = kwargs.get("headers")
+        self.set_options(**kwargs)
         self.verify_ssl = verify_ssl
         self.proxy = proxy
-
 
     @asyncio.coroutine
     def connect(self):
@@ -138,7 +144,6 @@ class Client(object):
             self.sd_list.append(sd)
         plugins = PluginContainer(self.options.plugins)
         plugins.init.initialized(wsdl=self.wsdl)
-
 
     def set_options(self, **kwargs):
         """
@@ -184,9 +189,11 @@ class Client(object):
         @rtype: L{Client}
 
         """
+
         class Uninitialized(Client):
             def __init__(self):
                 pass
+
         clone = Uninitialized()
         clone.options = Options()
         cp = Unskin(clone.options)
@@ -288,6 +295,7 @@ class ServiceSelector:
     @type __services: list
 
     """
+
     def __init__(self, client, services):
         """
         @param client: A suds client.
@@ -400,6 +408,7 @@ class PortSelector:
     @type __qn: str
 
     """
+
     def __init__(self, client, ports, qn):
         """
         @param client: A suds client.
@@ -506,6 +515,7 @@ class MethodSelector:
     @type __qn: str
 
     """
+
     def __init__(self, client, methods, qn):
         """
         @param client: A suds client.
@@ -793,7 +803,7 @@ class _SoapClient:
         if status in (http.client.ACCEPTED, http.client.NO_CONTENT):
             log.debug(debug_message)
             return
-        #TODO: Consider whether and how to allow plugins to handle error,
+        # TODO: Consider whether and how to allow plugins to handle error,
         # http.client.ACCEPTED & http.client.NO_CONTENT replies as well as successful
         # ones.
         if status == http.client.OK:
@@ -824,15 +834,18 @@ class _SoapClient:
             fault = self.__get_fault(replyroot)
             if fault:
                 if status != http.client.INTERNAL_SERVER_ERROR:
-                    log.warn("Web service reported a SOAP processing fault "
+                    log.warn(
+                        "Web service reported a SOAP processing fault "
                         "using an unexpected HTTP status code %d. Reporting "
-                        "as an internal server error.", status)
+                        "as an internal server error.",
+                        status,
+                    )
                 if self.options.faults:
                     raise WebFault(fault, replyroot)
                 return http.client.INTERNAL_SERVER_ERROR, fault
         if status != http.client.OK:
             if self.options.faults:
-                #TODO: Use a more specific exception class here.
+                # TODO: Use a more specific exception class here.
                 raise Exception((status, description))
             return status, description
 
@@ -840,7 +853,8 @@ class _SoapClient:
             return reply
 
         result = replyroot and self.method.binding.output.get_reply(
-            self.method, replyroot)
+            self.method, replyroot
+        )
         ctx = plugins.message.unmarshalled(reply=result)
         result = ctx.reply
         if self.options.faults:
@@ -875,9 +889,7 @@ class _SoapClient:
 
         """
         action = self.method.soap.action
-        result = {
-            "Content-Type": "text/xml; charset=utf-8",
-            "SOAPAction": action}
+        result = {"Content-Type": "text/xml; charset=utf-8", "SOAPAction": action}
         result.update(**self.options.headers)
         log.debug("headers = %s", result)
         return result

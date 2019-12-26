@@ -20,8 +20,8 @@ XML I{element} classes.
 
 from asyncsuds import *
 from asyncsuds.sax import *
-from asyncsuds.sax.text import Text
 from asyncsuds.sax.attribute import Attribute
+from asyncsuds.sax.text import Text
 
 
 class Element(object):
@@ -53,7 +53,8 @@ class Element(object):
         "eq": lambda a, b: a == b,
         "startswith": lambda a, b: a.startswith(b),
         "endswith": lambda a, b: a.endswith(b),
-        "contains": lambda a, b: b in a}
+        "contains": lambda a, b: b in a,
+    }
 
     specialprefixes = {Namespace.xmlns[0]: Namespace.xmlns[1]}
 
@@ -95,8 +96,7 @@ class Element(object):
         self.attributes = []
         self.text = None
         if parent is not None and not isinstance(parent, Element):
-            raise Exception("parent (%s) not-valid" %
-                (parent.__class__.__name__,))
+            raise Exception("parent (%s) not-valid" % (parent.__class__.__name__,))
         self.parent = parent
         self.children = []
         self.applyns(ns)
@@ -350,8 +350,7 @@ class Element(object):
                 self.attributes.append(child)
                 child.parent = self
                 continue
-            raise Exception("append %s not-valid" %
-                (child.__class__.__name__,))
+            raise Exception("append %s not-valid" % (child.__class__.__name__,))
         return self
 
     def insert(self, objects, index=0):
@@ -370,8 +369,7 @@ class Element(object):
         objects = (objects,)
         for child in objects:
             if not isinstance(child, Element):
-                raise Exception("append %s not-valid" %
-                    (child.__class__.__name__,))
+                raise Exception("append %s not-valid" % (child.__class__.__name__,))
             self.children.insert(index, child)
             child.parent = self
         return self
@@ -978,8 +976,7 @@ class Element(object):
                 self.children.insert(index, value)
 
     def __eq__(self, rhs):
-        return (isinstance(rhs, Element) and
-            self.match(rhs.name, rhs.namespace()))
+        return isinstance(rhs, Element) and self.match(rhs.name, rhs.namespace())
 
     def __repr__(self):
         return "Element (prefix=%s, name=%s)" % (self.prefix, self.name)
@@ -1202,4 +1199,5 @@ class PrefixNormalizer:
             Namespace.default,
             Namespace.xsdns,
             Namespace.xsins,
-            Namespace.xmlns)
+            Namespace.xmlns,
+        )

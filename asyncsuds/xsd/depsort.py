@@ -18,9 +18,10 @@ Dependency/topological sort implementation.
 
 """
 
+from logging import getLogger
+
 from asyncsuds import *
 
-from logging import getLogger
 log = getLogger(__name__)
 
 

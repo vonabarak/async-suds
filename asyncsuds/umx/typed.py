@@ -18,13 +18,15 @@
 Provides typed unmarshaller classes.
 """
 
+from logging import getLogger
+
 from asyncsuds import *
+from asyncsuds.resolver import Frame
+from asyncsuds.resolver import NodeResolver
+from asyncsuds.sudsobject import Factory
 from asyncsuds.umx import *
 from asyncsuds.umx.core import Core
-from asyncsuds.resolver import NodeResolver, Frame
-from asyncsuds.sudsobject import Factory
 
-from logging import getLogger
 log = getLogger(__name__)
 
 
@@ -33,8 +35,8 @@ log = getLogger(__name__)
 # type = The expected xsd type
 # real = The 'true' XSD type
 #
-Content.extensions.append('type')
-Content.extensions.append('real')
+Content.extensions.append("type")
+Content.extensions.append("real")
 
 
 class Typed(Core):
@@ -66,7 +68,7 @@ class Typed(Core):
         return Core.process(self, content)
 
     def reset(self):
-        log.debug('reset')
+        log.debug("reset")
         self.resolver.reset()
 
     def start(self, content):
@@ -100,8 +102,7 @@ class Typed(Core):
 
     def nillable(self, content):
         resolved = content.type.resolve()
-        return ( content.type.nillable or \
-            (resolved.builtin() and resolved.nillable ) )
+        return content.type.nillable or (resolved.builtin() and resolved.nillable)
 
     def append_attribute(self, name, value, content):
         """
@@ -115,7 +116,7 @@ class Typed(Core):
         """
         type = self.resolver.findattr(name)
         if type is None:
-            log.warn('attribute (%s) type, not-found', name)
+            log.warn("attribute (%s) type, not-found", name)
         else:
             value = self.translated(value, type)
         Core.append_attribute(self, name, value, content)

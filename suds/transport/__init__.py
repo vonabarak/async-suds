@@ -19,7 +19,6 @@ Contains transport interface (classes).
 """
 
 
-
 import sys
 
 
@@ -122,7 +121,11 @@ class Reply(object):
 CODE: %s
 HEADERS: %s
 MESSAGE:
-%s""" % (self.code, self.headers, self.message.decode("raw_unicode_escape"))
+%s""" % (
+            self.code,
+            self.headers,
+            self.message.decode("raw_unicode_escape"),
+        )
 
 
 class Transport(object):
@@ -130,6 +133,7 @@ class Transport(object):
 
     def __init__(self):
         from suds.transport.options import Options
+
         self.options = Options()
 
     def open(self, request):
@@ -143,7 +147,7 @@ class Transport(object):
         @raise TransportError: On all transport errors.
 
         """
-        raise Exception('not-implemented')
+        raise Exception("not-implemented")
 
     def send(self, request):
         """
@@ -161,4 +165,4 @@ class Transport(object):
         @raise TransportError: On all transport errors.
 
         """
-        raise Exception('not-implemented')
+        raise Exception("not-implemented")

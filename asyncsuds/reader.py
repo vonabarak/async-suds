@@ -19,13 +19,13 @@ caching system.
 
 """
 
+import asyncio
+from hashlib import md5
+
 import asyncsuds.cache
 import asyncsuds.plugin
 import asyncsuds.sax.parser
 import asyncsuds.transport
-import asyncio
-
-from hashlib import md5
 
 
 class Reader(object):
@@ -58,7 +58,7 @@ class Reader(object):
 
         """
         h = md5(name.encode()).hexdigest()
-        return '%s-%s' % (h, x)
+        return "%s-%s" % (h, x)
 
 
 class DefinitionsReader(Reader):

@@ -39,17 +39,16 @@ setuptools available provides us with the following benefits:
 
 """
 
-import sys
-if sys.version_info < (3, 3):
-    print("ERROR: Python 3.3+ required")
-    sys.exit(-2)
-
-
-
 import os
 import os.path
 import re
+import sys
+
 from asyncsuds.version import __version__
+
+if sys.version_info < (3, 3):
+    print("ERROR: Python 3.3+ required")
+    sys.exit(-2)
 
 
 # -----------------------------------------------------------------------------
@@ -84,8 +83,10 @@ attempt_to_install_setuptools = True
 script_folder = os.path.realpath(os.path.dirname(__file__))
 current_folder = os.path.realpath(os.getcwd())
 if script_folder != current_folder:
-    print("ERROR: Suds library setup script needs to be run from the folder "
-        "containing it.")
+    print(
+        "ERROR: Suds library setup script needs to be run from the folder "
+        "containing it."
+    )
     print("")
     print("Current folder: %s" % current_folder)
     print("Script folder: %s" % script_folder)
@@ -99,7 +100,6 @@ if script_folder != current_folder:
 tools_folder = os.path.join(script_folder, "tools")
 sys.path.insert(0, tools_folder)
 sys.path.pop(0)
-
 
 
 # -----------------------------------------------------------------------------
@@ -214,6 +214,7 @@ sys.path.pop(0)
 #           * Avoid the issue by never upgrading an existing setuptools
 #             installation (chosen design).
 
+
 def acquire_setuptools_setup():
     if not attempt_to_use_setuptools:
         return
@@ -230,6 +231,7 @@ def acquire_setuptools_setup():
         return setup
     return import_setuptools_setup()
 
+
 setup = acquire_setuptools_setup()
 using_setuptools = bool(setup)
 if not using_setuptools:
@@ -240,6 +242,7 @@ if not using_setuptools:
 # -----------------------------------------------------------------------------
 # Support functions.
 # -----------------------------------------------------------------------------
+
 
 def read_python_code(filename):
     "Returns the given Python source file's compiled content."
@@ -255,6 +258,7 @@ def read_python_code(filename):
     # read operations.
     source = source.replace("\r\n", "\n").replace("\r", "\n")
     return compile(source, filename, "exec")
+
 
 def recursive_package_list(*packages):
     """
@@ -290,6 +294,7 @@ def recursive_package_list(*packages):
             todo.append((subpackage, subfolder))
     return list(result)
 
+
 # Shamelessly stolen from setuptools project's pkg_resources module.
 def safe_version(version_string):
     """
@@ -302,9 +307,10 @@ def safe_version(version_string):
     version_string = version_string.replace(" ", ".")
     return re.sub("[^A-Za-z0-9.]+", "-", version_string)
 
+
 def unicode2ascii(unicode):
     """Convert a unicode string to its approximate ASCII equivalent."""
-    return unicode.encode("ascii", 'xmlcharrefreplace').decode("ascii")
+    return unicode.encode("ascii", "xmlcharrefreplace").decode("ascii")
 
 
 # -----------------------------------------------------------------------------
@@ -351,6 +357,7 @@ exec(read_python_code(os.path.join(script_folder, "asyncsuds", "version.py")))
 # first building a temporary one to work around problems like Python 2/3
 # compatibility.
 
+
 def test_requirements():
     """
     Return test requirements for the 'test' command or an error string.
@@ -366,8 +373,6 @@ def test_requirements():
     if not using_setuptools:
         return "test command not available without setuptools"
 
-    include_pytest_requirements = True
-
     # When using Python 2.5 on Windows, if setuptools chooses to install the
     # colorama package (pytest requirement on Windows) older than version
     # 0.1.11, running our 'setup.py test' command may show benign error
@@ -378,6 +383,7 @@ def test_requirements():
     # Python 2.5 compatible colorama 0.3.2 release.
     result = []
     return result
+
 
 test_error = None
 tests_require = test_requirements()
@@ -393,15 +399,19 @@ if test_error:
     class TestCommand(distutils.cmd.Command):
         description = test_error
         user_options = []
+
         def initialize_options(self):
             pass
+
         def finalize_options(self):
             pass
+
         def run(self):
             raise distutils.errors.DistutilsPlatformError(self.description)
+
+
 else:
-    from setuptools.command.test import (normalize_path as _normalize_path,
-        test as _test)
+    from setuptools.command.test import normalize_path as _normalize_path, test as _test
 
     class TestCommand(_test):
         # Derived from setuptools.command.test.test for its
@@ -414,11 +424,17 @@ else:
         description = "run pytest based unit tests after a build"
 
         # Override base class's command-line options.
-        #TODO: pytest argument passing support could be improved if we could
+        # TODO: pytest argument passing support could be improved if we could
         # get distutils/setuptools to pass all unrecognized command-line
         # parameters to us instead of complaining about them.
-        user_options = [("pytest-args=", "a", "arguments to pass to pytest "
-            "(whitespace separated, whitespaces in arguments not supported)")]
+        user_options = [
+            (
+                "pytest-args=",
+                "a",
+                "arguments to pass to pytest "
+                "(whitespace separated, whitespaces in arguments not supported)",
+            )
+        ]
 
         def initialize_options(self):
             self.pytest_args = None
@@ -445,6 +461,7 @@ else:
 
         def run_tests(self):
             import pytest
+
             sys.exit(pytest.main(self.test_args))
 
         def _test_cmd_string(self):
@@ -452,6 +469,7 @@ else:
             if self.pytest_args:
                 parts.append(self.pytest_args)
             return " ".join(parts)
+
 
 distutils_cmdclass["test"] = TestCommand
 
@@ -462,7 +480,6 @@ distutils_cmdclass["test"] = TestCommand
 
 # distutils.setup() 'obsoletes' parameter not introduced until Python 2.5.
 extra_setup_params["obsoletes"] = ["suds"]
-
 
 
 # -----------------------------------------------------------------------------
@@ -479,14 +496,16 @@ try:
     if not os.path.isfile(dummy_tools_file):
         f = open(dummy_tools_file, "w")
         try:
-            f.write("""\
+            f.write(
+                """\
 Dummy empty folder added as a part of a patch to silence setup.py warnings when
 determining which files belong to the project. See a related comment in the
 project's MANIFEST.in template for more detailed information.
 
 Both the folder and this file have been generated by the project's setup.py
 script and should not be placed under version control.
-""")
+"""
+            )
         finally:
             f.close()
 except EnvironmentError:
@@ -522,7 +541,7 @@ base_download_url = project_url + "/downloads"
 download_distribution_name = "%s-%s.tar.bz2" % (package_name, version_tag)
 download_url = "%s/%s" % (base_download_url, download_distribution_name)
 
-maintainer="Kamyar Inanloo"
+maintainer = "Kamyar Inanloo"
 
 setup(
     name=package_name,
@@ -533,32 +552,30 @@ setup(
     url=project_url,
     download_url=download_url,
     packages=recursive_package_list("asyncsuds"),
-
     author="Jeff Ortel",
     author_email="jortel@redhat.com",
     maintainer=maintainer,
     maintainer_email="kamyar1979@gmail.com",
-
     # See PEP-301 for the classifier specification. For a complete list of
     # available classifiers see
     # 'http://pypi.python.org/pypi?%3Aaction=list_classifiers'.
-    classifiers=["Development Status :: 5 - Production/Stable",
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: "
-            "GNU Library or Lesser General Public License (LGPL)",
+        "GNU Library or Lesser General Public License (LGPL)",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.3",
         "Programming Language :: Python :: 3.4",
-        "Topic :: Internet"],
-
+        "Topic :: Internet",
+    ],
     # PEP-314 states that, if possible, license & platform should be specified
     # using 'classifiers'.
     license="(specified using classifiers)",
     platforms=["(specified using classifiers)"],
-
     # Register distutils command customizations.
     cmdclass=distutils_cmdclass,
-
-    **extra_setup_params)
+    **extra_setup_params
+)

@@ -26,8 +26,14 @@ See the parse_args() function description for more detailed information.
 __all__ = ["parse_args"]
 
 
-def parse_args(method_name, param_defs, args, kwargs, external_param_processor,
-    extra_parameter_errors):
+def parse_args(
+    method_name,
+    param_defs,
+    args,
+    kwargs,
+    external_param_processor,
+    extra_parameter_errors,
+):
     """
     Parse arguments for suds web service operation invocation functions.
 
@@ -169,21 +175,28 @@ class _ArgParser:
             self.__error(msg % (param_name,))
 
         if self.__args:
+
             def plural_suffix(count):
                 if count == 1:
                     return ""
                 return "s"
+
             def plural_was_were(count):
                 if count == 1:
                     return "was"
                 return "were"
+
             expected = args_required
             if args_required != args_allowed:
                 expected = "%d to %d" % (args_required, args_allowed)
             given = self.__args_count
-            msg_parts = ["takes %s positional argument" % (expected,),
-                plural_suffix(expected), " but %d " % (given,),
-                plural_was_were(given), " given"]
+            msg_parts = [
+                "takes %s positional argument" % (expected,),
+                plural_suffix(expected),
+                " but %d " % (given,),
+                plural_was_were(given),
+                " given",
+            ]
             self.__error("".join(msg_parts))
 
     def __cleanup_run(self):
@@ -200,8 +213,7 @@ class _ArgParser:
         frame_class = Frame
         if ancestry_item is not None and ancestry_item.choice():
             frame_class = ChoiceFrame
-        return frame_class(ancestry_item, self.__error,
-            self.__extra_parameter_errors)
+        return frame_class(ancestry_item, self.__error, self.__extra_parameter_errors)
 
     def __get_param_value(self, name):
         """
@@ -267,7 +279,7 @@ class _ArgParser:
             if frame.id() is not ancestry[n]:
                 return previous, ancestry[n:]
             previous = frame
-        return frame, ancestry[n + 1:]
+        return frame, ancestry[n + 1 :]
 
     def __pop_frames_above(self, frame):
         """Pops all the frames above, but not including the given frame."""
@@ -290,8 +302,9 @@ class _ArgParser:
             self.__params_with_arguments.add(param_name)
         self.__update_context(ancestry)
         self.__stack[-1].process_parameter(param_optional, value is not None)
-        self.__external_param_processor(param_name, param_type,
-            self.__in_choice_context(), value)
+        self.__external_param_processor(
+            param_name, param_type, self.__in_choice_context(), value
+        )
 
     def __process_parameters(self):
         """Collect values for given web service operation input parameters."""
@@ -369,9 +382,8 @@ class Frame:
 
     def process_subframe(self, subframe):
         self._process_item(
-            subframe.has_value(),
-            subframe.args_allowed(),
-            subframe.args_required())
+            subframe.has_value(), subframe.args_allowed(), subframe.args_required()
+        )
 
     def _process_item(self, has_value, args_allowed, args_required):
         self._args_allowed += args_allowed
@@ -414,6 +426,5 @@ class ChoiceFrame(Frame):
     def __update_has_value_for_item(self, item_has_value):
         if item_has_value:
             if self.has_value() and self._extra_parameter_errors:
-                self._error("got multiple values for a single choice "
-                    "parameter")
+                self._error("got multiple values for a single choice " "parameter")
             self._has_value = True

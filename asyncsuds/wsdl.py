@@ -21,22 +21,26 @@ WSDL schema document.
 
 """
 
+import asyncio
+import re
+from logging import getLogger
+from urllib.parse import urljoin
+
 from asyncsuds import *
 from asyncsuds.bindings.document import Document
-from asyncsuds.bindings.rpc import RPC, Encoded
+from asyncsuds.bindings.rpc import RPC
+from asyncsuds.bindings.rpc import Encoded
 from asyncsuds.reader import DocumentReader
 from asyncsuds.sax.element import Element
-from asyncsuds.sudsobject import Object, Facade, Metadata
-from asyncsuds.xsd import qualify, Namespace
+from asyncsuds.sudsobject import Facade
+from asyncsuds.sudsobject import Metadata
+from asyncsuds.sudsobject import Object
+from asyncsuds.xsd import Namespace
+from asyncsuds.xsd import qualify
 from asyncsuds.xsd.query import ElementQuery
-from asyncsuds.xsd.schema import Schema, SchemaCollection
+from asyncsuds.xsd.schema import Schema
+from asyncsuds.xsd.schema import SchemaCollection
 
-import re
-from asyncsuds import soaparray
-from urllib.parse import urljoin
-import asyncio
-
-from logging import getLogger
 log = getLogger(__name__)
 
 
@@ -62,7 +66,7 @@ class WObject(Object):
         Object.__init__(self)
         self.root = root
         pmd = Metadata()
-        pmd.excludes = ['root']
+        pmd.excludes = ["root"]
         pmd.wrappers = dict(qname=repr)
         self.__metadata__.__print__ = pmd
 
@@ -72,8 +76,6 @@ class WObject(Object):
         @param definitions: A definitions object.
         @type definitions: L{Definitions}
         """
-        pass
-
 
 
 class NamedObject(WObject):
@@ -93,10 +95,10 @@ class NamedObject(WObject):
         @type definitions: L{Definitions}
         """
         WObject.__init__(self, root, definitions)
-        self.name = root.get('name')
+        self.name = root.get("name")
         self.qname = (self.name, definitions.tns[1])
         pmd = self.__metadata__.__print__
-        pmd.wrappers['qname'] = repr
+        pmd.wrappers["qname"] = repr
 
 
 class Definitions(WObject):
@@ -156,8 +158,6 @@ class Definitions(WObject):
         @type options: L{options.Options}
 
         """
-        pass
-
 
     @asyncio.coroutine
     def connect(self):
@@ -181,7 +181,6 @@ class Definitions(WObject):
             self.add_methods(s)
         log.debug("WSDL at '%s' loaded:\n%s", self.url, self)
 
-
     def mktns(self, root):
         """Get/create the target namespace."""
         tns = root.get("targetNamespace")
@@ -195,7 +194,8 @@ class Definitions(WObject):
         """Add child objects using the factory."""
         for c in root.getChildren(ns=wsdlns):
             child = Factory.create(c, self)
-            if child is None: continue
+            if child is None:
+                continue
             self.children.append(child)
             if isinstance(child, Import):
                 self.imports.append(child)
@@ -248,7 +248,8 @@ class Definitions(WObject):
         bindings = {
             "document/literal": Document(self),
             "rpc/literal": RPC(self),
-            "rpc/encoded": Encoded(self)}
+            "rpc/encoded": Encoded(self),
+        }
         for p in service.ports:
             binding = p.binding
             ptype = p.binding.type
@@ -552,7 +553,7 @@ class PortType(NamedObject):
         """
         try:
             return self.operations[name]
-        except Exception as e:
+        except Exception:
             raise MethodNotFound(name)
 
     def __gt__(self, other):
@@ -723,8 +724,7 @@ class Binding(NamedObject):
         """
         ptop = self.type.operation(op.name)
         if ptop is None:
-            raise Exception("operation '%s' not defined in portType" % (
-                op.name,))
+            raise Exception("operation '%s' not defined in portType" % (op.name,))
         soap = op.soap
         parts = soap.input.body.parts
         if len(parts):
@@ -769,8 +769,7 @@ class Binding(NamedObject):
                     header.part = p
                     break
             if pn == header.part:
-                raise Exception("message '%s' has not part named '%s'" % (
-                    ref, pn))
+                raise Exception("message '%s' has not part named '%s'" % (ref, pn))
 
     def resolvefaults(self, definitions, op):
         """
@@ -785,8 +784,7 @@ class Binding(NamedObject):
         """
         ptop = self.type.operation(op.name)
         if ptop is None:
-            raise Exception("operation '%s' not defined in portType" % (
-                op.name,))
+            raise Exception("operation '%s' not defined in portType" % (op.name,))
         soap = op.soap
         for fault in soap.faults:
             for f in ptop.faults:
@@ -795,8 +793,9 @@ class Binding(NamedObject):
                     continue
             if hasattr(fault, "parts"):
                 continue
-            raise Exception("fault '%s' not defined in portType '%s'" % (
-                fault.name, self.type.name))
+            raise Exception(
+                "fault '%s' not defined in portType '%s'" % (fault.name, self.type.name)
+            )
 
     def operation(self, name):
         """
@@ -931,8 +930,7 @@ class Service(NamedObject):
             if binding is None:
                 raise Exception("binding '%s', not-found" % (p.binding,))
             if binding.soap is None:
-                log.debug("binding '%s' - not a SOAP binding, discarded",
-                    binding.name)
+                log.debug("binding '%s' - not a SOAP binding, discarded", binding.name)
                 continue
             p.binding = binding
             filtered.append(p)
@@ -952,12 +950,13 @@ class Factory:
     """
 
     tags = {
-        "import" : Import,
-        "types" : Types,
-        "message" : Message,
-        "portType" : PortType,
-        "binding" : Binding,
-        "service" : Service}
+        "import": Import,
+        "types": Types,
+        "message": Message,
+        "portType": PortType,
+        "binding": Binding,
+        "service": Service,
+    }
 
     @classmethod
     def create(cls, root, definitions):

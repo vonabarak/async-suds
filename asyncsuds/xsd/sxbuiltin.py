@@ -17,14 +17,14 @@
 
 """Classes representing I{built-in} XSD schema objects."""
 
-from asyncsuds import *
-from asyncsuds.xsd import *
-from asyncsuds.sax.date import *
-from asyncsuds.xsd.sxbase import XBuiltin
-
 import datetime
 import decimal
 import sys
+
+from asyncsuds import *
+from asyncsuds.sax.date import *
+from asyncsuds.xsd import *
+from asyncsuds.xsd.sxbase import XBuiltin
 
 
 class XAny(XBuiltin):
@@ -240,7 +240,6 @@ class XLong(XBuiltin):
 
 class XString(XBuiltin):
     """Represents an XSD <xsd:string/> node."""
-    pass
 
 
 class XTime(XBuiltin):

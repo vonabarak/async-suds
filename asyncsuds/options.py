@@ -18,13 +18,14 @@
 Suds basic options classes.
 """
 
-from asyncsuds.cache import Cache, NoCache
+from asyncsuds.cache import Cache
+from asyncsuds.cache import NoCache
 from asyncsuds.properties import *
-from asyncsuds.store import DocumentStore, defaultDocumentStore
+from asyncsuds.store import DocumentStore
+from asyncsuds.store import defaultDocumentStore
 from asyncsuds.transport import Transport
 from asyncsuds.wsse import Security
 from asyncsuds.xsd.doctor import Doctor
-from asyncio import BaseEventLoop
 
 
 class TpLinker(AutoLinker):
@@ -125,28 +126,29 @@ class Options(Skin):
                 - type: I{bool}
                 - default: True
     """
+
     def __init__(self, **kwargs):
         domain = __name__
         definitions = [
-            Definition('cache', Cache, NoCache()),
-            Definition('documentStore', DocumentStore, defaultDocumentStore),
-            Definition('extraArgumentErrors', bool, True),
-            Definition('faults', bool, True),
-            Definition('transport', Transport, None, TpLinker()),
-            Definition('service', (int, str), None),
-            Definition('port', (int, str), None),
-            Definition('location', str, None),
-            Definition('soapheaders', (), ()),
-            Definition('wsse', Security, None),
-            Definition('doctor', Doctor, None),
-            Definition('xstq', bool, True),
-            Definition('prefixes', bool, True),
-            Definition('retxml', bool, False),
-            Definition('prettyxml', bool, False),
-            Definition('autoblend', bool, False),
-            Definition('cachingpolicy', int, 0),
-            Definition('plugins', (list, tuple), []),
-            Definition('nosend', bool, False),
-            Definition('unwrap', bool, True),
-            Definition('loop', (BaseEventLoop,), None)]
+            Definition("cache", Cache, NoCache()),
+            Definition("documentStore", DocumentStore, defaultDocumentStore),
+            Definition("extraArgumentErrors", bool, True),
+            Definition("faults", bool, True),
+            Definition("transport", Transport, None, TpLinker()),
+            Definition("service", (int, str), None),
+            Definition("port", (int, str), None),
+            Definition("location", str, None),
+            Definition("soapheaders", (), ()),
+            Definition("wsse", Security, None),
+            Definition("doctor", Doctor, None),
+            Definition("xstq", bool, True),
+            Definition("prefixes", bool, True),
+            Definition("retxml", bool, False),
+            Definition("prettyxml", bool, False),
+            Definition("autoblend", bool, False),
+            Definition("cachingpolicy", int, 0),
+            Definition("plugins", (list, tuple), []),
+            Definition("nosend", bool, False),
+            Definition("unwrap", bool, True),
+        ]
         Skin.__init__(self, domain, definitions, kwargs)
