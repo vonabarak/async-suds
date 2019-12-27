@@ -102,7 +102,7 @@ class Client(object):
         password = unquote(u.password) if u.password else ""
         port_string = f":{u.port}" if u.port else ""
         query_string = f"?{u.query}" if u.query else ""
-        self.url = f"{u.scheme}://{u.hostname}:{port_string}{u.path}?{query_string}"
+        self.url = f"{u.scheme}://{u.hostname}{port_string}{u.path}{query_string}"
         options = Options()
         options.transport = asyncsuds.transport.http_transport.HttpAuthenticated(
             username=username, password=password
