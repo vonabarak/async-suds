@@ -114,13 +114,17 @@ class Client(object):
         self.set_options(**kwargs)
         self.verify_ssl = verify_ssl
         self.proxy = proxy
+        self.reader = None
+        self.wsdl = None
+        self.factory = None
+        self.service = None
+        self.sd_list = None
 
-    @asyncio.coroutine
-    def connect(self):
+    async def connect(self):
         self.reader = DefinitionsReader(self.options, Definitions)
         self.reader.verify_ssl = self.verify_ssl
         self.reader.proxy = self.proxy
-        self.wsdl = yield from self.reader.open(self.url, headers=self.headers)
+        self.wsdl = await self.reader.open(self.url, headers=self.headers)
         self.factory = Factory(self.wsdl)
         self.service = ServiceSelector(self, self.wsdl.services)
         self.sd_list = []
@@ -819,7 +823,7 @@ class _SoapClient:
             fault = self.__get_fault(replyroot)
             if fault:
                 if status != http.client.INTERNAL_SERVER_ERROR:
-                    log.warn(
+                    log.warning(
                         "Web service reported a SOAP processing fault "
                         "using an unexpected HTTP status code %d. Reporting "
                         "as an internal server error.",
