@@ -149,7 +149,7 @@ class _ArgParser:
             return
 
         if self.__kwargs:
-            param_name = self.__kwargs.keys()[0]
+            param_name = list(self.__kwargs.keys())[0]
             if param_name in self.__params_with_arguments:
                 msg = "got multiple values for parameter '%s'"
             else:
